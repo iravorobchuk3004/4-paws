@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "my-app",
+    "name": "4 Paws",
     "slug": "my-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -20,6 +20,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-image"
+    ],
+    "scheme": "fourpaws",
+    "experiments": {
+      "typedRoutes": true
+    },
+    "splash": {
+      "backgroundColor": "#6252CE"
     }
   }
 }
