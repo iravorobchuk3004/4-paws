@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FadeInUp } from '@/components/anim';
 import { PetRow, Tag } from '@/components/PetRow';
 import { Chip, NavHeader } from '@/components/ui';
 import { PetProfile, profiles } from '@/data/profiles';
@@ -26,21 +27,25 @@ export default function Matches() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <NavHeader location="Hamburg · 25 km" />
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <View style={{ gap: 8 }}>
+        <FadeInUp delay={0} style={{ gap: 8 }}>
           <Text style={styles.title}>Your matches</Text>
           <Text style={styles.subtitle}>
             {dogs.length} dogs to get to know, based on your lifestyle answers.
           </Text>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.sorts}>
+        <FadeInUp delay={70} style={styles.sorts}>
           {sorts.map((s) => (
             <Chip key={s} label={s} selected={sort === s} onPress={() => setSort(s)} />
           ))}
-        </View>
+        </FadeInUp>
 
-        <Group title="Strong fit" pets={strong} />
-        <Group title="Possible fit" pets={possible} />
+        <FadeInUp delay={140}>
+          <Group title="Strong fit" pets={strong} />
+        </FadeInUp>
+        <FadeInUp delay={210}>
+          <Group title="Possible fit" pets={possible} />
+        </FadeInUp>
       </ScrollView>
     </SafeAreaView>
   );

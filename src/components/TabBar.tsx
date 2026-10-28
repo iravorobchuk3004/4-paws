@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { PressableScale } from '@/components/anim';
 import { Icon } from '@/components/ui';
 import { colors, fonts, shadow } from '@/theme';
 
@@ -43,10 +45,7 @@ export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
       pointerEvents="box-none"
     >
       {showsFoundButton.includes(current) && (
-        <Pressable style={styles.found} onPress={() => router.push('/found')}>
-          <Icon source={require('../../assets/figma/found-pet.svg')} />
-          <Text style={styles.foundText}>I found a pet</Text>
-        </Pressable>
+        <FoundButton />
       )}
       <View style={styles.bar}>
         {state.routes.map((route) => {
@@ -61,16 +60,82 @@ export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
                 if (route.name !== current) navigateToTab(route.key);
               }}
             >
-              <Icon
-                source={focused && tab.activeIcon ? tab.activeIcon : tab.icon}
-                tint={focused && !tab.activeIcon ? colors.purple : undefined}
-              />
+              <BounceOnFocus focused={focused}>
+                <Icon
+                  source={focused && tab.activeIcon ? tab.activeIcon : tab.icon}
+                  tint={focused && !tab.activeIcon ? colors.purple : undefined}
+                />
+              </BounceOnFocus>
               <Text style={[styles.label, focused && { color: colors.purple }]}>{tab.label}</Text>
             </Pressable>
           );
         })}
       </View>
     </LinearGradient>
+  );
+}
+
+// Hops the tab icon up when its tab becomes active.
+function BounceOnFocus({ focused, children }: { focused: boolean; children: React.ReactNode }) {
+  const [lift] = useState(() => new Animated.Value(0));
+  const wasFocused = useRef(focused);
+
+  useEffect(() => {
+    if (focused && !wasFocused.current) {
+      lift.setValue(0);
+      Animated.sequence([
+        Animated.timing(lift, { toValue: 1, duration: 140, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.spring(lift, { toValue: 0, friction: 3, tension: 180, useNativeDriver: true }),
+      ]).start();
+    }
+    wasFocused.current = focused;
+  }, [focused, lift]);
+
+  return (
+    <Animated.View
+      style={{
+        transform: [
+          { translateY: lift.interpolate({ inputRange: [0, 1], outputRange: [0, -8] }) },
+          { scale: lift.interpolate({ inputRange: [0, 1], outputRange: [1, 1.15] }) },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+// "I found a pet" button that gently breathes and wiggles its icon to draw attention.
+function FoundButton() {
+  const [t] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(t, { toValue: 1, duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(t, { toValue: 0, duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.delay(1600),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [t]);
+
+  return (
+    <PressableScale onPress={() => router.push('/found')}>
+      <Animated.View
+        style={[styles.found, { transform: [{ scale: t.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05] }) }] }]}
+      >
+        <Animated.View
+          style={{
+            transform: [{ rotate: t.interpolate({ inputRange: [0, 0.25, 0.5, 0.75, 1], outputRange: ['0deg', '-12deg', '0deg', '12deg', '0deg'] }) }],
+          }}
+        >
+          <Icon source={require('../../assets/figma/found-pet.svg')} />
+        </Animated.View>
+        <Text style={styles.foundText}>I found a pet</Text>
+      </Animated.View>
+    </PressableScale>
   );
 }
 

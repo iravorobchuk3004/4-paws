@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { LikePop, PressableScale } from '@/components/anim';
 import { Icon } from '@/components/ui';
 import { Pet } from '@/data/pets';
 import { colors, fonts } from '@/theme';
@@ -16,7 +17,7 @@ export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
   const small = pet.tag.toLowerCase().includes('match');
 
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <PressableScale style={styles.card} onPress={onPress} scaleTo={0.97}>
       <View style={styles.photo}>
         <Image source={pet.photo} style={StyleSheet.absoluteFill} contentFit="cover" />
         <Pressable
@@ -24,11 +25,13 @@ export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
           onPress={() => setLiked((l) => !l)}
           hitSlop={8}
         >
-          <Icon
-            source={require('../../assets/figma/card-heart.svg')}
-            size={16}
-            tint={liked ? colors.purple : undefined}
-          />
+          <LikePop active={liked}>
+            <Icon
+              source={require('../../assets/figma/card-heart.svg')}
+              size={16}
+              tint={liked ? colors.purple : undefined}
+            />
+          </LikePop>
         </Pressable>
       </View>
       <View style={{ gap: 4 }}>
@@ -45,7 +48,7 @@ export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
           {pet.breed} · {pet.age} · {pet.distance}
         </Text>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 

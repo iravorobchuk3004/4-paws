@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FadeInUp } from '@/components/anim';
 import { PetCard } from '@/components/PetCard';
 import { Chip, Icon, SectionHeader } from '@/components/ui';
 import { categories, mostLoved, Pet, perfectMatches, stories } from '@/data/pets';
@@ -22,15 +23,15 @@ export default function Home() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 220 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.location}>
+        <FadeInUp delay={0} style={styles.location}>
           <Icon source={require('../../../assets/figma/location-pin.svg')} />
           <Text style={styles.city}>
             Hamburg<Text style={styles.radius}> · 25 km</Text>
           </Text>
           <Icon source={require('../../../assets/figma/icon-chevron-down.svg')} size={16} />
-        </View>
+        </FadeInUp>
 
-        <View style={styles.search}>
+        <FadeInUp delay={70} style={styles.search}>
           <Icon source={require('../../../assets/figma/icon-search.svg')} />
           <TextInput
             placeholder="Find your new friend"
@@ -40,9 +41,9 @@ export default function Home() {
           <Pressable style={styles.filterButton}>
             <Icon source={require('../../../assets/figma/icon-filters.svg')} size={20} />
           </Pressable>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.filters}>
+        <FadeInUp delay={140} style={styles.filters}>
           {filters.map((f) => (
             <Chip
               key={f}
@@ -53,9 +54,9 @@ export default function Home() {
               onPress={() => setFilter(f)}
             />
           ))}
-        </View>
+        </FadeInUp>
 
-        <View style={styles.section}>
+        <FadeInUp delay={210} style={styles.section}>
           <SectionHeader title="Popular now" />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {categories.map((c) => (
@@ -67,27 +68,27 @@ export default function Home() {
               </Pressable>
             ))}
           </ScrollView>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.section}>
+        <FadeInUp delay={280} style={styles.section}>
           <SectionHeader title="Perfect match for you" onSeeAll={() => router.push('/matches')} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {perfectMatches.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
           </ScrollView>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.section}>
+        <FadeInUp delay={350} style={styles.section}>
           <SectionHeader title="Most loved this week" />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {mostLoved.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
           </ScrollView>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.section}>
+        <FadeInUp delay={420} style={styles.section}>
           <SectionHeader title="Happy tails" />
           <View style={styles.statRow}>
             <Icon source={require('../../../assets/figma/home-heart-small.svg')} size={18} />
@@ -131,7 +132,7 @@ export default function Home() {
             <Icon source={require('../../../assets/figma/icon-plus.svg')} size={16} />
             <Text style={styles.shareText}>Share your story</Text>
           </Pressable>
-        </View>
+        </FadeInUp>
       </ScrollView>
     </SafeAreaView>
   );

@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Tag } from '@/components/PetRow';
+import { LikePop } from '@/components/anim';
 import { Icon, NavHeader, PrimaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
 import { useApp } from '@/store';
@@ -33,14 +34,16 @@ export default function PetDetails() {
         <View style={styles.hero}>
           <Image source={pet.hero} style={StyleSheet.absoluteFill} contentFit="cover" />
           <Pressable style={styles.heroButton} onPress={() => toggleSaved(pet.id)}>
-            <Icon
-              source={
-                isSaved
-                  ? require('../../../assets/figma/heart-filled.svg')
-                  : require('../../../assets/figma/hero-heart.svg')
-              }
-              size={20}
-            />
+            <LikePop active={isSaved}>
+              <Icon
+                source={
+                  isSaved
+                    ? require('../../../assets/figma/heart-filled.svg')
+                    : require('../../../assets/figma/hero-heart.svg')
+                }
+                size={20}
+              />
+            </LikePop>
           </Pressable>
           <Pressable
             style={styles.heroButton}

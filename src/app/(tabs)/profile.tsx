@@ -4,6 +4,7 @@ import { Fragment } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FadeInUp } from '@/components/anim';
 import { Icon } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
 import { useApp } from '@/store';
@@ -45,7 +46,7 @@ export default function Profile() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <View style={{ gap: 4 }}>
+        <FadeInUp delay={0} style={{ gap: 4 }}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>Profile</Text>
             <Pressable style={styles.logout} onPress={() => router.replace('/welcome')}>
@@ -54,9 +55,9 @@ export default function Profile() {
             </Pressable>
           </View>
           <Text style={styles.subtitle}>You & your next friend</Text>
-        </View>
+        </FadeInUp>
 
-        <View style={[card, styles.profile]}>
+        <FadeInUp delay={70} style={[card, styles.profile]}>
           <Image source={require('../../../assets/figma/profile-avatar.png')} style={styles.avatar} />
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={styles.name}>Anna Kovalenko</Text>
@@ -66,26 +67,28 @@ export default function Profile() {
             <Icon source={require('../../../assets/figma/edit.svg')} size={16} />
             <Text style={styles.editText}>Edit</Text>
           </Pressable>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.stats}>
+        <FadeInUp delay={140} style={styles.stats}>
           <Stat value={saved.length} label="Saved" />
           <Stat value={applications.length} label={applications.length === 1 ? 'Application' : 'Applications'} />
           <Stat value={0} label="Adopted" />
-        </View>
+        </FadeInUp>
 
         {meeting && (
-          <Pressable style={styles.meeting} onPress={() => router.push(`/pet/${meeting.id}`)}>
-            <Image source={meeting.thumb} style={styles.meetingPhoto} contentFit="cover" />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={styles.meetingTitle}>Your meeting with {meeting.name}</Text>
-              <Text style={styles.meetingText}>Application sent · Awaiting review</Text>
-            </View>
-            <Icon source={require('../../../assets/figma/chevron-right-purple.svg')} size={20} />
-          </Pressable>
+          <FadeInUp delay={210}>
+            <Pressable style={styles.meeting} onPress={() => router.push(`/pet/${meeting.id}`)}>
+              <Image source={meeting.thumb} style={styles.meetingPhoto} contentFit="cover" />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={styles.meetingTitle}>Your meeting with {meeting.name}</Text>
+                <Text style={styles.meetingText}>Application sent · Awaiting review</Text>
+              </View>
+              <Icon source={require('../../../assets/figma/chevron-right-purple.svg')} size={20} />
+            </Pressable>
+          </FadeInUp>
         )}
 
-        <View style={{ gap: 12 }}>
+        <FadeInUp delay={280} style={{ gap: 12 }}>
           <Text style={styles.sectionTitle}>Your account</Text>
           <View style={[card, styles.settings]}>
             {settings.map((s, i) => (
@@ -104,7 +107,7 @@ export default function Profile() {
               </Fragment>
             ))}
           </View>
-        </View>
+        </FadeInUp>
       </ScrollView>
     </SafeAreaView>
   );

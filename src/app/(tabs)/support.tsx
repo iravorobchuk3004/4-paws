@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FadeInUp } from '@/components/anim';
 import { Tag } from '@/components/PetRow';
 import { Progress } from '@/components/Progress';
 import { Chip } from '@/components/ui';
@@ -26,18 +27,18 @@ export default function Support() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <View style={{ gap: 8 }}>
+        <FadeInUp delay={0} style={{ gap: 8 }}>
           <Text style={styles.title}>Help a furry friend</Text>
           <Text style={styles.subtitle}>Choose a pet and see exactly what your help pays for.</Text>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.filters}>
+        <FadeInUp delay={70} style={styles.filters}>
           {filters.map((f) => (
             <Chip key={f} label={f} selected={filter === f} onPress={() => setFilter(f)} />
           ))}
-        </View>
+        </FadeInUp>
 
-        <View style={{ gap: 12 }}>
+        <FadeInUp delay={140} style={{ gap: 12 }}>
           {list.map((c) => {
             const raised = c.raised + (donated[c.id] ?? 0);
             return (
@@ -65,7 +66,7 @@ export default function Support() {
               </View>
             );
           })}
-        </View>
+        </FadeInUp>
       </ScrollView>
     </SafeAreaView>
   );

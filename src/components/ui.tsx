@@ -12,6 +12,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
+import { PressableScale } from '@/components/anim';
 import { colors, fonts, shadow } from '@/theme';
 
 export function Icon({ source, size = 24, tint }: { source: ImageProps['source']; size?: number; tint?: string }) {
@@ -30,18 +31,18 @@ export function PrimaryButton({
   style?: StyleProp<ViewStyle>;
 }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.primary, pressed && styles.pressed, style]}>
+    <PressableScale onPress={onPress} style={[styles.primary, style]}>
       <Text style={styles.primaryText}>{title}</Text>
       {icon && <Icon source={icon} size={18} />}
-    </Pressable>
+    </PressableScale>
   );
 }
 
 export function SecondaryButton({ title, onPress }: { title: string; onPress?: () => void }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}>
+    <PressableScale onPress={onPress} style={styles.secondary}>
       <Text style={styles.secondaryText}>{title}</Text>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -96,8 +97,9 @@ export function Chip({
   variant?: 'grey' | 'outline';
 }) {
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
+      scaleTo={0.9}
       style={[
         styles.chip,
         variant === 'outline' && styles.chipOutline,
@@ -106,7 +108,7 @@ export function Chip({
     >
       {icon && <Icon source={icon} />}
       <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -167,7 +169,6 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   secondaryText: { fontFamily: fonts.bold, fontSize: 15, color: colors.black },
-  pressed: { opacity: 0.85 },
   navHeader: {
     height: 42,
     paddingHorizontal: 16,

@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { LikePop, PressableScale } from '@/components/anim';
 import { Icon } from '@/components/ui';
 import { PetProfile } from '@/data/profiles';
 import { useApp } from '@/store';
@@ -30,7 +31,7 @@ export function PetRow({
   const isSaved = saved.includes(pet.id);
 
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <PressableScale style={styles.card} onPress={onPress} scaleTo={0.97}>
       <Image source={photo} style={styles.photo} contentFit="cover" />
       <View style={styles.info}>
         <View style={styles.nameRow}>
@@ -38,14 +39,16 @@ export function PetRow({
           <Icon source={genderIcons[pet.sex]} size={16} />
           <View style={{ flex: 1 }} />
           <Pressable onPress={() => toggleSaved(pet.id)} hitSlop={10}>
-            <Icon
-              source={
-                isSaved
-                  ? require('../../assets/figma/heart-filled.svg')
-                  : require('../../assets/figma/heart-outline.svg')
-              }
-              size={20}
-            />
+            <LikePop active={isSaved}>
+              <Icon
+                source={
+                  isSaved
+                    ? require('../../assets/figma/heart-filled.svg')
+                    : require('../../assets/figma/heart-outline.svg')
+                }
+                size={20}
+              />
+            </LikePop>
           </Pressable>
         </View>
         <Text style={styles.meta}>
@@ -54,7 +57,7 @@ export function PetRow({
         {note && <Text style={styles.note}>{note}</Text>}
         <View style={styles.tags}>{children}</View>
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 

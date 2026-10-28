@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FadeInUp } from '@/components/anim';
 import { PetRow, Tag } from '@/components/PetRow';
 import { Chip, Icon, SecondaryButton } from '@/components/ui';
 import { getProfile, PetProfile } from '@/data/profiles';
@@ -25,18 +26,18 @@ export default function SavedAnimals() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-        <View style={{ gap: 8 }}>
+        <FadeInUp delay={0} style={{ gap: 8 }}>
           <Text style={styles.title}>Saved animals</Text>
           <Text style={styles.subtitle}>{pets.length} saved · a little space to think</Text>
-        </View>
+        </FadeInUp>
 
-        <View style={styles.filters}>
+        <FadeInUp delay={70} style={styles.filters}>
           <Chip label={`All · ${pets.length}`} selected={filter === 'all'} onPress={() => setFilter('all')} />
           <Chip label={`Dogs · ${count('dog')}`} selected={filter === 'dog'} onPress={() => setFilter('dog')} />
           <Chip label={`Cats · ${count('cat')}`} selected={filter === 'cat'} onPress={() => setFilter('cat')} />
-        </View>
+        </FadeInUp>
 
-        <View style={{ gap: 12 }}>
+        <FadeInUp delay={140} style={{ gap: 12 }}>
           {visible.map((pet) => {
             const requested = applications.includes(pet.id);
             const status = availability[pet.id];
@@ -62,14 +63,14 @@ export default function SavedAnimals() {
             );
           })}
           {!visible.length && <Text style={styles.empty}>Nothing saved here yet.</Text>}
-        </View>
+        </FadeInUp>
 
-        <View style={styles.note}>
+        <FadeInUp delay={210} style={styles.note}>
           <Icon source={require('../../../assets/figma/info.svg')} size={20} />
           <Text style={styles.noteText}>
             Availability can change. Open a profile to check the latest status before you visit.
           </Text>
-        </View>
+        </FadeInUp>
 
         <SecondaryButton title="Explore more animals" onPress={() => router.navigate('/(tabs)')} />
       </ScrollView>
