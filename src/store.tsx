@@ -3,7 +3,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 // App state kept on the device: account, onboarding answers, saved animals,
 // meeting applications, donations and notification settings.
-export type User = { name: string; email: string; phone?: string };
+export type User = { name: string; email: string; phone?: string; photo?: string };
 export type Goal = 'adopt' | 'help' | 'found' | 'explore';
 export type CaseUpdate = { at: number; text: string };
 export type FoundCase = {

@@ -89,9 +89,13 @@ export default function Profile() {
         <FadeInUp delay={70} style={[card, styles.profile]}>
           {user ? (
             <>
-              <View style={[styles.avatar, styles.initials]}>
-                <Text style={styles.initialsText}>{initials || '🐾'}</Text>
-              </View>
+              <Pressable style={[styles.avatar, styles.initials]} onPress={() => router.push('/settings/account')}>
+                {user.photo ? (
+                  <Image source={{ uri: user.photo }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                ) : (
+                  <Text style={styles.initialsText}>{initials || '🐾'}</Text>
+                )}
+              </Pressable>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={styles.name}>{user.name}</Text>
                 <Text style={styles.email}>{user.email}</Text>
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
   logoutText: { fontFamily: fonts.medium, fontSize: 14, color: colors.grey },
   profile: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   avatar: { width: 64, height: 64, borderRadius: 32 },
-  initials: { backgroundColor: colors.purpleSelected, alignItems: 'center', justifyContent: 'center' },
+  initials: { overflow: 'hidden', backgroundColor: colors.purpleSelected, alignItems: 'center', justifyContent: 'center' },
   initialsText: { fontFamily: fonts.bold, fontSize: 22, color: colors.purple },
   name: { fontFamily: fonts.semiBold, fontSize: 16, color: colors.black },
   email: { fontFamily: fonts.regular, fontSize: 12, color: colors.grey },

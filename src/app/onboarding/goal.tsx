@@ -7,40 +7,35 @@ import { Icon, NavHeader, PrimaryButton } from '@/components/ui';
 import { Goal, useApp } from '@/store';
 import { colors, fonts, shadow } from '@/theme';
 
-const goals: { id: Goal; title: string; text?: string; icon: number; cta: string }[] = [
+const goals: { id: Goal; title: string; text?: string; icon: number }[] = [
   {
     id: 'adopt',
     title: 'I want to adopt',
     text: 'Find your companion.',
     icon: require('../../../assets/figma/goal-adopt.svg'),
-    cta: 'Continue to adoption',
   },
   {
     id: 'help',
     title: 'I want to help',
     text: 'Support a specific animal’s care.',
     icon: require('../../../assets/figma/goal-help.svg'),
-    cta: 'Continue to support',
   },
   {
     id: 'found',
     title: 'I found a pet',
     text: 'Report a pet and ask for safe assistance.',
     icon: require('../../../assets/figma/goal-found.svg'),
-    cta: 'Continue to report',
   },
   {
     id: 'explore',
     title: 'Just Exploring',
     icon: require('../../../assets/figma/goal-explore.svg'),
-    cta: 'Continue',
   },
 ];
 
 export default function GoalStep() {
   const { goal, setGoal } = useApp();
   const [selected, setSelected] = useState<Goal>(goal);
-  const cta = goals.find((g) => g.id === selected)!.cta;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -76,7 +71,7 @@ export default function GoalStep() {
 
       <View style={styles.bottom}>
         <PrimaryButton
-          title={cta}
+          title="Continue"
           onPress={() => {
             setGoal(selected);
             router.push('/onboarding/create-account');

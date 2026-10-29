@@ -7,13 +7,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeInUp } from '@/components/anim';
 import { PetCard } from '@/components/PetCard';
-import { Chip, Icon, SectionHeader } from '@/components/ui';
+import { KindSwitch } from '@/components/KindSwitch';
+import { Icon, SectionHeader } from '@/components/ui';
 import { categories, mostLoved, Pet, perfectMatches, stories } from '@/data/pets';
 import { profiles } from '@/data/profiles';
 import { useInbox } from '@/lib/inbox';
 import { colors, fonts } from '@/theme';
 
-const filters = ['All', 'Dogs', 'Cats', 'Other'];
+const filters = [
+  { value: 'All', label: 'All', icon: 'paw' },
+  { value: 'Dogs', label: 'Dogs', icon: 'dog' },
+  { value: 'Cats', label: 'Cats', icon: 'cat' },
+  { value: 'Other', label: 'Other', icon: 'rabbit' },
+] as const;
 const kindFor: Record<string, string | undefined> = { Dogs: 'dog', Cats: 'cat', Other: 'other' };
 const radii = ['10 km', '25 km', '50 km'];
 
@@ -78,16 +84,7 @@ export default function Home() {
         </FadeInUp>
 
         <FadeInUp delay={140} style={styles.filters}>
-          {filters.map((f) => (
-            <Chip
-              key={f}
-              label={f}
-              variant="outline"
-              selected={filter === f}
-              icon={f === 'All' ? require('../../../assets/figma/icon-all.svg') : undefined}
-              onPress={() => setFilter(f)}
-            />
-          ))}
+          <KindSwitch options={[...filters]} value={filter} onChange={setFilter} />
         </FadeInUp>
 
         <FadeInUp delay={210} style={styles.section}>
@@ -141,7 +138,14 @@ export default function Home() {
               <View key={s.id} style={styles.story}>
                 <View style={styles.storyPhotos}>
                   <View style={[styles.storyPhoto, styles.storyBefore]}>
-                    <Image source={s.before} style={StyleSheet.absoluteFill} contentFit="cover" />
+                    {/* Same pet as "now", dimmed behind kennel bars, so the pair reads as one story. */}
+                    <Image source={s.now} style={StyleSheet.absoluteFill} contentFit="cover" blurRadius={1} />
+                    <View style={[StyleSheet.absoluteFill, styles.storyDim]} />
+                    <View style={[StyleSheet.absoluteFill, styles.bars]}>
+                      {Array.from({ length: 6 }, (_, i) => (
+                        <View key={i} style={styles.bar} />
+                      ))}
+                    </View>
                     <View style={[styles.storyLabel, { backgroundColor: 'rgba(27,27,27,0.7)' }]}>
                       <Text style={styles.storyLabelText}>Before · shelter</Text>
                     </View>
@@ -244,7 +248,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  filters: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginTop: 12 },
+  filters: { paddingHorizontal: 16, marginTop: 16 },
   section: { marginTop: 24, gap: 10 },
   row: { paddingHorizontal: 16, gap: 12 },
   tile: { width: 80, gap: 8, alignItems: 'center' },
@@ -261,7 +265,6 @@ const styles = StyleSheet.create({
   statStrong: { fontFamily: fonts.semiBold, color: colors.black },
   story: {
     width: 300,
-    height: 241,
     borderRadius: 16,
     backgroundColor: colors.white,
     padding: 10,
@@ -316,7 +319,10 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingHorizontal: 4,
   },
-  storyFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 'auto', paddingHorizontal: 4 },
+  storyFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, paddingHorizontal: 4 },
+  storyDim: { backgroundColor: 'rgba(60,60,70,0.45)' },
+  bars: { flexDirection: 'row', justifyContent: 'space-evenly' },
+  bar: { width: 3, height: '100%', backgroundColor: 'rgba(220,220,220,0.75)' },
   avatar: { width: 32, height: 32, borderRadius: 16 },
   storyNames: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.black },
   storyMeta: { fontFamily: fonts.regular, fontSize: 11, color: colors.greyMuted },

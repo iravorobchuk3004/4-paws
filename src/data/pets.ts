@@ -8,7 +8,6 @@ export type Pet = {
   distance: string;
   photo: number;
   tag: string;
-  tagColor?: string;
 };
 
 export const categories = [
@@ -82,7 +81,6 @@ export const mostLoved: Pet[] = [
     distance: '3.0 km',
     photo: require('../../assets/figma/pet-boni.jpg'),
     tag: 'Vaccinated',
-    tagColor: '#FFB6D4',
   },
 ];
 
@@ -92,7 +90,6 @@ export const stories = [
     names: 'Anna & Nala',
     meta: 'Adopted 8 months ago · Paw Haven',
     quote: '“She was scared of everyone at the shelter. Now she sleeps on my feet every night.”',
-    before: require('../../assets/figma/story-anna-before.png'),
     now: require('../../assets/figma/story-anna-now.jpg'),
     avatar: require('../../assets/figma/story-anna-avatar.png'),
   },
@@ -101,7 +98,6 @@ export const stories = [
     names: 'Tom & Rex',
     meta: 'Adopted 1 year ago · Happy Tails',
     quote: '“Rex waited 2 years in the shelter. Now he never leaves my side on our morning runs.”',
-    before: require('../../assets/figma/story-tom-before.png'),
     now: require('../../assets/figma/story-tom-now.jpg'),
     avatar: require('../../assets/figma/story-tom-avatar.png'),
   },

@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -15,23 +16,18 @@ const sexIcons = {
 export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
   const { saved, toggleSaved } = useApp();
   const liked = saved.includes(pet.id);
-  const small = pet.tag.toLowerCase().includes('match');
 
   return (
     <PressableScale style={styles.card} onPress={onPress} scaleTo={0.97}>
       <View style={styles.photo}>
         <Image source={pet.photo} style={StyleSheet.absoluteFill} contentFit="cover" />
         <Pressable
-          style={[styles.like, { backgroundColor: pet.tagColor ?? colors.pinkTag }]}
+          style={styles.like}
           onPress={() => toggleSaved(pet.id)}
           hitSlop={8}
         >
           <LikePop active={liked}>
-            <Icon
-              source={require('../../assets/figma/card-heart.svg')}
-              size={16}
-              tint={liked ? colors.purple : undefined}
-            />
+            <Ionicons name={liked ? 'heart' : 'heart-outline'} size={16} color={colors.black} />
           </LikePop>
         </Pressable>
       </View>
@@ -41,8 +37,10 @@ export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
             <Text style={styles.name}>{pet.name}</Text>
             <Icon source={sexIcons[pet.sex]} size={18} />
           </View>
-          <View style={[styles.tag, { backgroundColor: pet.tagColor ?? colors.pinkTag }]}>
-            <Text style={[styles.tagText, small && styles.tagTextSmall]}>{pet.tag}</Text>
+          <View style={styles.tag}>
+            <Text style={styles.tagText} numberOfLines={1}>
+              {pet.tag}
+            </Text>
           </View>
         </View>
         <Text style={styles.meta} numberOfLines={1}>
@@ -72,6 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.pinkLight,
   },
   row: {
     flexDirection: 'row',
@@ -81,14 +80,13 @@ const styles = StyleSheet.create({
   },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   name: { fontFamily: fonts.semiBold, fontSize: 16, lineHeight: 22, color: colors.black },
-  tag: { borderRadius: 3, paddingHorizontal: 5, paddingVertical: 2 },
+  tag: { height: 20, justifyContent: 'center', borderRadius: 4, paddingHorizontal: 6, backgroundColor: colors.pinkLight },
   tagText: {
     fontFamily: fonts.semiBold,
-    fontSize: 10,
-    letterSpacing: 0.4,
+    fontSize: 9,
+    letterSpacing: 0.36,
     color: colors.black,
     textTransform: 'uppercase',
   },
-  tagTextSmall: { fontSize: 8, letterSpacing: 0.32 },
   meta: { fontFamily: fonts.regular, fontSize: 12, color: colors.black, paddingHorizontal: 8 },
 });

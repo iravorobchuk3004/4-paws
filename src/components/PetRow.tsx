@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -40,14 +41,7 @@ export function PetRow({
           <View style={{ flex: 1 }} />
           <Pressable onPress={() => toggleSaved(pet.id)} hitSlop={10}>
             <LikePop active={isSaved}>
-              <Icon
-                source={
-                  isSaved
-                    ? require('../../assets/figma/heart-filled.svg')
-                    : require('../../assets/figma/heart-outline.svg')
-                }
-                size={20}
-              />
+              <Ionicons name={isSaved ? 'heart' : 'heart-outline'} size={20} color={colors.black} />
             </LikePop>
           </Pressable>
         </View>
@@ -62,7 +56,7 @@ export function PetRow({
 }
 
 export function Tag({ label, tone = 'pink' }: { label: string; tone?: 'pink' | 'purple' | 'grey' }) {
-  const bg = { pink: colors.pinkTag, purple: colors.purpleTint, grey: colors.greyOption }[tone];
+  const bg = { pink: colors.pinkLight, purple: colors.purpleTint, grey: colors.greyOption }[tone];
   return (
     <View style={[styles.tag, { backgroundColor: bg }]}>
       <Text style={[styles.tagText, tone === 'purple' && { color: colors.purple }]}>{label}</Text>
@@ -90,11 +84,11 @@ const styles = StyleSheet.create({
   meta: { fontFamily: fonts.regular, fontSize: 12, color: colors.black },
   note: { fontFamily: fonts.regular, fontSize: 12, color: colors.grey },
   tags: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  tag: { borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2 },
+  tag: { height: 20, justifyContent: 'center', borderRadius: 4, paddingHorizontal: 6 },
   tagText: {
     fontFamily: fonts.semiBold,
-    fontSize: 10,
-    letterSpacing: 0.4,
+    fontSize: 9,
+    letterSpacing: 0.36,
     textTransform: 'uppercase',
     color: colors.black,
   },

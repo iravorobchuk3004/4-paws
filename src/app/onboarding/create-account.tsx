@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -96,8 +97,8 @@ export default function CreateAccount() {
         <Text style={styles.or}>or</Text>
 
         <View style={styles.social}>
-          <SocialButton label="Continue with Google" icon={require('../../../assets/figma/google.svg')} />
-          <SocialButton label="Continue with Apple" icon={require('../../../assets/figma/apple.svg')} />
+          <SocialButton label="Continue with Google" icon="logo-google" color="#4285F4" />
+          <SocialButton label="Continue with Apple" icon="logo-apple" color={colors.black} />
           <View style={styles.alt}>
             <Text style={styles.altText}>Already have an account? </Text>
             <Link href="/onboarding/sign-in" style={[styles.altText, styles.link]}>
@@ -115,13 +116,13 @@ export default function CreateAccount() {
 }
 
 // Social sign-in needs provider keys and a backend, so for now it points people to email.
-function SocialButton({ label, icon }: { label: string; icon: number }) {
+function SocialButton({ label, icon, color }: { label: string; icon: 'logo-google' | 'logo-apple'; color: string }) {
   return (
     <Pressable
       style={styles.socialButton}
       onPress={() => Alert.alert(label, 'This option is coming soon. Please use your name and email for now.')}
     >
-      <Icon source={icon} />
+      <Ionicons name={icon} size={20} color={color} />
       <Text style={styles.socialText}>{label}</Text>
     </Pressable>
   );
@@ -139,8 +140,8 @@ const styles = StyleSheet.create({
   },
   social: { paddingHorizontal: 16, gap: 12 },
   socialButton: {
-    height: 56,
-    borderRadius: 8,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.purpleBorder,

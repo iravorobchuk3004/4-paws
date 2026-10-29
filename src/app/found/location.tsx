@@ -1,5 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,7 +13,14 @@ const pin = require('../../../assets/figma/field-user.svg');
 
 export default function FoundLocation() {
   const { report, update } = useFoundReport();
-  const valid = report.location.trim().length > 0 && report.when.trim().length > 0;
+  const [submitted, setSubmitted] = useState(false);
+  const locationError = submitted && !report.location.trim() && 'Add where you found the pet, or use your location.';
+  const whenError = submitted && !report.when.trim() && 'Add roughly when you saw the pet.';
+
+  const next = () => {
+    setSubmitted(true);
+    if (report.location.trim() && report.when.trim()) router.push('/found/assistance');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -42,6 +50,7 @@ export default function FoundLocation() {
             icon={pin}
             value={report.location}
             onChangeText={(location) => update({ location })}
+            error={locationError}
           />
           <FormField
             label="Landmark · optional"
@@ -56,6 +65,7 @@ export default function FoundLocation() {
             icon={pin}
             value={report.when}
             onChangeText={(when) => update({ when })}
+            error={whenError}
           />
         </View>
       </ScrollView>
@@ -63,8 +73,7 @@ export default function FoundLocation() {
       <View style={styles.bottom}>
         <PrimaryButton
           title="Continue to assistance"
-          onPress={valid ? () => router.push('/found/assistance') : undefined}
-          style={!valid && { opacity: 0.5 }}
+          onPress={next}
         />
       </View>
     </SafeAreaView>

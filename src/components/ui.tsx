@@ -130,7 +130,7 @@ export function FormField({
     <View style={{ gap: 4 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <View style={[styles.input, !!error && { borderColor: colors.error }]}>
-        <Icon source={icon} />
+        <Icon source={icon} size={20} />
         <TextInput
           placeholderTextColor="rgba(98,97,95,0.43)"
           style={styles.inputText}
@@ -230,17 +230,17 @@ const styles = StyleSheet.create({
   chipTextSelected: { fontFamily: fonts.medium, color: colors.purple },
   fieldLabel: { fontFamily: fonts.semiBold, fontSize: 14, lineHeight: 20, color: colors.black },
   input: {
-    height: 56,
-    borderRadius: 60,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.purpleBorder,
-    paddingHorizontal: 12,
+    borderColor: colors.purpleSelected,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  inputText: { flex: 1, fontFamily: fonts.regular, fontSize: 14, color: colors.black },
+  inputText: { flex: 1, height: '100%', paddingVertical: 0, fontFamily: fonts.regular, fontSize: 15, color: colors.black },
   hint: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 16, color: colors.grey },
   sectionHeader: {
     flexDirection: 'row',

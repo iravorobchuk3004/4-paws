@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,9 +15,14 @@ export default function FoundAssistance() {
   const { report, update } = useFoundReport();
   const { addReport } = useApp();
   const { name, phone } = report;
-  const valid = report.help.length > 0 && name.trim() && phone.trim();
+  const [submitted, setSubmitted] = useState(false);
+  const nameError = submitted && !name.trim() && 'Add your name so volunteers know who to ask for.';
+  const phoneError = submitted && phone.trim().length < 6 && 'Add a phone number volunteers can call.';
+  const helpError = submitted && !report.help.length;
 
   const submit = () => {
+    setSubmitted(true);
+    if (!name.trim() || phone.trim().length < 6 || !report.help.length) return;
     const id = `FP-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
     addReport({
       id,
@@ -56,6 +62,7 @@ export default function FoundAssistance() {
             value={report.help}
             onChange={toggleHelp}
           />
+          {helpError && <Text style={styles.error}>Choose at least one kind of help.</Text>}
           <ChoiceField
             label="Can you keep the animal safely?"
             options={['For 24 hours', 'No', 'Not sure']}
@@ -80,6 +87,7 @@ export default function FoundAssistance() {
             autoComplete="name"
             value={name}
             onChangeText={(name) => update({ name })}
+            error={nameError}
           />
           <FormField
             label="Phone"
@@ -89,6 +97,7 @@ export default function FoundAssistance() {
             autoComplete="tel"
             value={phone}
             onChangeText={(phone) => update({ phone })}
+            error={phoneError}
           />
         </View>
       </ScrollView>
@@ -96,8 +105,7 @@ export default function FoundAssistance() {
       <View style={styles.bottom}>
         <PrimaryButton
           title="Submit assistance request"
-          onPress={valid ? submit : undefined}
-          style={!valid && { opacity: 0.5 }}
+          onPress={submit}
         />
       </View>
     </SafeAreaView>
@@ -107,6 +115,7 @@ export default function FoundAssistance() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
   body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 24, gap: 24 },
+  error: { fontFamily: fonts.medium, fontSize: 12, color: colors.error, marginTop: -12 },
   sectionTitle: { fontFamily: fonts.bold, fontSize: 20, color: colors.black },
   bottom: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
 });

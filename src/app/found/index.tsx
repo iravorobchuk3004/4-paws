@@ -16,7 +16,6 @@ const MAX_PHOTOS = 3;
 export default function FoundStep1() {
   const { report, update } = useFoundReport();
   const [preview, setPreview] = useState<number | null>(null);
-  const valid = report.description.trim().length > 0;
   const hasDraft = report.photos.length > 0 || report.description.trim().length > 0;
 
   // Ask before throwing away a half-filled report.
@@ -147,7 +146,7 @@ export default function FoundStep1() {
         </View>
 
         <TextArea
-          label="Description · required"
+          label="Description · optional"
           placeholder="Brown medium-size dog, red collar, no tag. Friendly but cautious."
           value={report.description}
           onChangeText={(description) => update({ description })}
@@ -157,8 +156,7 @@ export default function FoundStep1() {
       <View style={styles.bottom}>
         <PrimaryButton
           title="Continue to location"
-          onPress={valid ? () => router.push('/found/location') : undefined}
-          style={!valid && { opacity: 0.5 }}
+          onPress={() => router.push('/found/location')}
         />
       </View>
 
