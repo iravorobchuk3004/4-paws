@@ -17,7 +17,7 @@ const availability: Record<string, { label: string; tone: 'grey' | 'pink' }> = {
 
 export default function SavedAnimals() {
   const { saved, applications } = useApp();
-  const [filter, setFilter] = useState<'all' | 'dog' | 'cat'>('all');
+  const [filter, setFilter] = useState<'all' | PetProfile['kind']>('all');
 
   const pets = saved.map(getProfile);
   const count = (kind: PetProfile['kind']) => pets.filter((p) => p.kind === kind).length;
@@ -35,6 +35,9 @@ export default function SavedAnimals() {
           <Chip label={`All · ${pets.length}`} selected={filter === 'all'} onPress={() => setFilter('all')} />
           <Chip label={`Dogs · ${count('dog')}`} selected={filter === 'dog'} onPress={() => setFilter('dog')} />
           <Chip label={`Cats · ${count('cat')}`} selected={filter === 'cat'} onPress={() => setFilter('cat')} />
+          {count('other') > 0 && (
+            <Chip label={`Other · ${count('other')}`} selected={filter === 'other'} onPress={() => setFilter('other')} />
+          )}
         </FadeInUp>
 
         <FadeInUp delay={140} style={{ gap: 12 }}>

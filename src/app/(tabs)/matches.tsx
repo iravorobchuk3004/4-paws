@@ -6,18 +6,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FadeInUp } from '@/components/anim';
 import { PetRow, Tag } from '@/components/PetRow';
 import { Chip, NavHeader } from '@/components/ui';
-import { PetProfile, profiles } from '@/data/profiles';
+import { ageInYears, PetProfile, profiles } from '@/data/profiles';
 import { colors, fonts } from '@/theme';
 
 const sorts = ['Best match', 'Nearest', 'Newest', 'Age'];
-const dogs = profiles.filter((p) => p.kind === 'dog');
 
 export default function Matches() {
   const [sort, setSort] = useState('Best match');
 
-  const sorted = [...dogs].sort((a, b) => {
+  const sorted = [...profiles].sort((a, b) => {
     if (sort === 'Nearest') return parseFloat(a.distance) - parseFloat(b.distance);
-    if (sort === 'Age') return parseFloat(a.age) - parseFloat(b.age);
+    if (sort === 'Age') return ageInYears(a.age) - ageInYears(b.age);
     if (sort === 'Newest') return a.addedDaysAgo - b.addedDaysAgo;
     return b.match - a.match;
   });
@@ -31,7 +30,7 @@ export default function Matches() {
         <FadeInUp delay={0} style={{ gap: 8 }}>
           <Text style={styles.title}>Your matches</Text>
           <Text style={styles.subtitle}>
-            {dogs.length} dogs to get to know, based on your lifestyle answers.
+            {profiles.length} animals to get to know, based on your lifestyle answers.
           </Text>
         </FadeInUp>
 

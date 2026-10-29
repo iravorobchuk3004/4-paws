@@ -7,20 +7,22 @@ import { FadeInUp } from '@/components/anim';
 import { PetRow, Tag } from '@/components/PetRow';
 import { Chip, Icon, NavHeader } from '@/components/ui';
 import { categories } from '@/data/pets';
-import { profiles } from '@/data/profiles';
+import { PetProfile, profiles } from '@/data/profiles';
 import { colors, fonts } from '@/theme';
 
 const kinds = [
   { label: 'All', kind: null },
   { label: 'Dogs', kind: 'dog' },
   { label: 'Cats', kind: 'cat' },
+  { label: 'Other', kind: 'other' },
 ] as const;
+type Kind = PetProfile['kind'];
 
 // Every adoptable pet with search, type and category filters.
 export default function Browse() {
-  const params = useLocalSearchParams<{ q?: string; category?: string }>();
+  const params = useLocalSearchParams<{ q?: string; category?: string; kind?: Kind }>();
   const [query, setQuery] = useState(params.q ?? '');
-  const [kind, setKind] = useState<'dog' | 'cat' | null>(null);
+  const [kind, setKind] = useState<Kind | null>(params.kind ?? null);
   const [category, setCategory] = useState<string | null>(params.category ?? null);
 
   const q = query.trim().toLowerCase();
@@ -33,7 +35,7 @@ export default function Browse() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavHeader step="All pets" />
+      <NavHeader step={category ?? 'All pets'} />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <View style={styles.search}>
           <Icon source={require('../../assets/figma/icon-search.svg')} />
@@ -51,11 +53,15 @@ export default function Browse() {
 
         <View style={styles.chips}>
           {kinds.map((k) => (
-            <Chip key={k.label} label={k.label} selected={kind === k.kind} onPress={() => setKind(k.kind)} />
+            <Chip key={k.label} label={k.label} selected={kind === k.kind} onPress={() => {
+                setKind(k.kind);
+                // Drop a category that doesn't exist for the new animal type.
+                if (k.kind && category && !categories.find((c) => c.label === category)?.kinds.includes(k.kind)) setCategory(null);
+              }} />
           ))}
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          {categories.map((c) => (
+          {categories.filter((c) => !kind || c.kinds.includes(kind)).map((c) => (
             <Chip
               key={c.label}
               label={c.label}

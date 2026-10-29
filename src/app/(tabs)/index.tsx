@@ -9,32 +9,46 @@ import { FadeInUp } from '@/components/anim';
 import { PetCard } from '@/components/PetCard';
 import { KindSwitch } from '@/components/KindSwitch';
 import { Icon, SectionHeader } from '@/components/ui';
-import { categories, mostLoved, Pet, perfectMatches, stories } from '@/data/pets';
+import { categories, Pet, stories, toCard } from '@/data/pets';
 import { profiles } from '@/data/profiles';
 import { useInbox } from '@/lib/inbox';
 import { colors, fonts } from '@/theme';
 
 const filters = [
-  { value: 'All', label: 'All', icon: 'paw' },
-  { value: 'Dogs', label: 'Dogs', icon: 'dog' },
-  { value: 'Cats', label: 'Cats', icon: 'cat' },
-  { value: 'Other', label: 'Other', icon: 'rabbit' },
+  { value: 'all', label: 'All', icon: 'paw' },
+  { value: 'dog', label: 'Dogs', icon: 'bone' },
+  { value: 'cat', label: 'Cats', icon: 'cat' },
+  { value: 'other', label: 'Other', icon: 'kiwi-bird' },
 ] as const;
-const kindFor: Record<string, string | undefined> = { Dogs: 'dog', Cats: 'cat', Other: 'other' };
+type Filter = (typeof filters)[number]['value'];
+const MATCH_COUNT = 5;
 const radii = ['10 km', '25 km', '50 km'];
 
 const openPet = (pet: Pet) => router.push(`/pet/${pet.id}`);
-const matchesFilter = (pet: Pet, filter: string) =>
-  filter === 'All' || profiles.find((p) => p.id === pet.id)?.kind === kindFor[filter];
+
+// Cards for the selected animal type: best matches first, then the most saved of the rest.
+function homeLists(filter: Filter) {
+  const pool = profiles.filter((p) => filter === 'all' || p.kind === filter);
+  const top = [...pool].sort((a, b) => b.match - a.match).slice(0, Math.min(MATCH_COUNT, Math.ceil(pool.length / 2)));
+  const rest = pool.filter((p) => !top.includes(p)).sort((a, b) => b.loved - a.loved).slice(0, 6);
+  return {
+    matches: top.map((p) => toCard(p, `${p.match}% match`)),
+    loved: rest.map((p) =>
+      toCard(p, p.urgent ? 'Urgent' : p.addedDaysAgo <= 3 ? 'New' : `${p.loved} saves`),
+    ),
+    tiles: categories.filter((c) => filter === 'all' || c.kinds.includes(filter)),
+  };
+}
 
 export default function Home() {
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState<Filter>('all');
+  const kindLabel = filters.find((f) => f.value === filter)!.label.toLowerCase();
   const [query, setQuery] = useState('');
   const [radius, setRadius] = useState('25 km');
   const { unread } = useInbox();
 
-  const matches = perfectMatches.filter((p) => matchesFilter(p, filter));
-  const loved = mostLoved.filter((p) => matchesFilter(p, filter));
+  const { matches, loved, tiles } = homeLists(filter);
+  const kindParam = filter === 'all' ? {} : { kind: filter };
 
   const search = () => {
     router.push({ pathname: '/browse', params: { q: query.trim() } });
@@ -88,13 +102,13 @@ export default function Home() {
         </FadeInUp>
 
         <FadeInUp delay={210} style={styles.section}>
-          <SectionHeader title="Popular now" onSeeAll={() => router.push('/browse')} />
+          <SectionHeader title="Popular now" onSeeAll={() => router.push({ pathname: '/browse', params: kindParam })} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-            {categories.map((c) => (
+            {tiles.map((c) => (
               <Pressable
                 key={c.label}
                 style={styles.tile}
-                onPress={() => router.push({ pathname: '/browse', params: { category: c.label } })}
+                onPress={() => router.push({ pathname: '/browse', params: { category: c.label, ...kindParam } })}
               >
                 <Image source={c.photo} style={styles.tilePhoto} contentFit="cover" />
                 <Text style={styles.tileLabel} numberOfLines={1}>
@@ -111,17 +125,17 @@ export default function Home() {
             {matches.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
-            {!matches.length && <Text style={styles.empty}>No {filter.toLowerCase()} in this list right now.</Text>}
+            {!matches.length && <Text style={styles.empty}>No {kindLabel} in this list right now.</Text>}
           </ScrollView>
         </FadeInUp>
 
         <FadeInUp delay={350} style={styles.section}>
-          <SectionHeader title="Most loved this week" onSeeAll={() => router.push('/browse')} />
+          <SectionHeader title="Most loved this week" onSeeAll={() => router.push({ pathname: '/browse', params: kindParam })} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {loved.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
-            {!loved.length && <Text style={styles.empty}>No {filter.toLowerCase()} in this list right now.</Text>}
+            {!loved.length && <Text style={styles.empty}>No {kindLabel} in this list right now.</Text>}
           </ScrollView>
         </FadeInUp>
 

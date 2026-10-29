@@ -1,10 +1,11 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, fonts, shadow } from '@/theme';
 
-type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+// Solid Font Awesome glyphs, e.g. paw, bone, cat, kiwi-bird.
+type IconName = 'paw' | 'bone' | 'cat' | 'kiwi-bird';
 
 const PAD = 4;
 
@@ -36,7 +37,7 @@ export function KindSwitch<T extends string>({
         const active = o.value === value;
         return (
           <Pressable key={o.value} style={styles.segment} onPress={() => onChange(o.value)}>
-            <MaterialCommunityIcons name={o.icon} size={18} color={active ? colors.white : colors.grey} />
+            <FontAwesome6 name={o.icon} solid size={15} color={active ? colors.white : colors.grey} />
             <Text style={[styles.label, active && styles.labelActive]}>{o.label}</Text>
           </Pressable>
         );
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.purple,
   },
-  segment: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
+  segment: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   label: { fontFamily: fonts.medium, fontSize: 13, color: colors.grey },
   labelActive: { fontFamily: fonts.semiBold, color: colors.white },
 });

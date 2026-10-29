@@ -1,3 +1,5 @@
+import type { PetProfile } from '@/data/profiles';
+
 // Sample content from the Figma design until a real backend exists.
 export type Pet = {
   id: string;
@@ -10,79 +12,27 @@ export type Pet = {
   tag: string;
 };
 
-export const categories = [
-  { label: 'Puppies', photo: require('../../assets/figma/cat-puppies.jpg') },
-  { label: 'Kittens', photo: require('../../assets/figma/cat-kittens.jpg') },
-  { label: 'Rabbits', photo: require('../../assets/figma/cat-rabbits.jpg') },
-  { label: 'Calm seniors', photo: require('../../assets/figma/cat-seniors.jpg') },
-  { label: 'Active dogs', photo: require('../../assets/figma/cat-active.jpg') },
+// Popular-now tiles; `kinds` decides which tiles show for the Dogs / Cats / Other switch.
+export const categories: { label: string; photo: number; kinds: PetProfile['kind'][] }[] = [
+  { label: 'Puppies', photo: require('../../assets/figma/cat-puppies.jpg'), kinds: ['dog'] },
+  { label: 'Kittens', photo: require('../../assets/figma/cat-kittens.jpg'), kinds: ['cat'] },
+  { label: 'Rabbits', photo: require('../../assets/figma/cat-rabbits.jpg'), kinds: ['other'] },
+  { label: 'Calm seniors', photo: require('../../assets/figma/cat-seniors.jpg'), kinds: ['dog', 'cat'] },
+  { label: 'Birds', photo: require('../../assets/pets/kiwi.jpg'), kinds: ['other'] },
+  { label: 'Active dogs', photo: require('../../assets/figma/cat-active.jpg'), kinds: ['dog'] },
 ];
 
-export const perfectMatches: Pet[] = [
-  {
-    id: 'luna',
-    name: 'Luna',
-    sex: 'female',
-    breed: 'Weimaraner',
-    age: '3 yrs',
-    distance: '1.1 km',
-    photo: require('../../assets/figma/pet-luna.jpg'),
-    tag: '92% match',
-  },
-  {
-    id: 'molly',
-    name: 'Molly',
-    sex: 'female',
-    breed: 'Retriever',
-    age: '4 yrs',
-    distance: '2.4 km',
-    photo: require('../../assets/figma/pet-molly.jpg'),
-    tag: '88% match',
-  },
-  {
-    id: 'maxi',
-    name: 'Maxi',
-    sex: 'female',
-    breed: 'Jack Russell',
-    age: '1 yr',
-    distance: '3.2 km',
-    photo: require('../../assets/figma/cat-puppies.jpg'),
-    tag: '85% match',
-  },
-];
-
-export const mostLoved: Pet[] = [
-  {
-    id: 'bucks',
-    name: 'Bucks',
-    sex: 'male',
-    breed: 'Beagle',
-    age: '2 yrs',
-    distance: '1.1 km',
-    photo: require('../../assets/figma/pet-bucks.jpg'),
-    tag: 'Urgent',
-  },
-  {
-    id: 'cookie',
-    name: 'Cookie',
-    sex: 'male',
-    breed: 'Toller',
-    age: '1 yr',
-    distance: '2.1 km',
-    photo: require('../../assets/figma/pet-cookie.jpg'),
-    tag: 'New',
-  },
-  {
-    id: 'boni',
-    name: 'Boni',
-    sex: 'male',
-    breed: 'Mixed breed',
-    age: '3 yrs',
-    distance: '3.0 km',
-    photo: require('../../assets/figma/pet-boni.jpg'),
-    tag: 'Vaccinated',
-  },
-];
+// Small Home card built from a full profile.
+export const toCard = (p: PetProfile, tag: string): Pet => ({
+  id: p.id,
+  name: p.name,
+  sex: p.sex,
+  breed: p.breed,
+  age: p.age,
+  distance: p.distance,
+  photo: p.card ?? p.thumb,
+  tag,
+});
 
 export const stories = [
   {
