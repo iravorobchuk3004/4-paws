@@ -7,53 +7,49 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeInUp } from '@/components/anim';
 import { PetCard } from '@/components/PetCard';
-import { KindSwitch } from '@/components/KindSwitch';
+import { StoryCard } from '@/components/StoryCard';
+import { CategoryTile } from '@/components/CategoryTile';
 import { Icon, SectionHeader } from '@/components/ui';
-import { categories, Pet, stories, toCard } from '@/data/pets';
+import { allCategory, categories, Category, Pet, stories, toCard } from '@/data/pets';
 import { getProfile, profiles } from '@/data/profiles';
 import { useInbox } from '@/lib/inbox';
+import { matchScore } from '@/lib/match';
+import { myStoryCard, shareStory } from '@/lib/stories';
 import { mealsFrom } from '@/lib/treats';
 import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
-const filters = [
-  { value: 'all', label: 'All', icon: 'paw' },
-  { value: 'dog', label: 'Dogs', icon: 'bone' },
-  { value: 'cat', label: 'Cats', icon: 'cat' },
-  { value: 'other', label: 'Other', icon: 'kiwi-bird' },
-] as const;
-type Filter = (typeof filters)[number]['value'];
 const MATCH_COUNT = 5;
 const radii = ['10 km', '25 km', '50 km'];
 
 const openPet = (pet: Pet) => router.push(`/pet/${pet.id}`);
 
-// Cards for the selected animal type: best matches first, then the most saved of the rest.
-function homeLists(filter: Filter) {
-  const pool = profiles.filter((p) => filter === 'all' || p.kind === filter);
-  const top = [...pool].sort((a, b) => b.match - a.match).slice(0, Math.min(MATCH_COUNT, Math.ceil(pool.length / 2)));
-  const rest = pool.filter((p) => !top.includes(p)).sort((a, b) => b.loved - a.loved).slice(0, 6);
+// Cards for the selected category: best matches for your lifestyle first, then the most saved of the rest.
+function homeLists(category: Category, prefs: Record<string, string[]>) {
+  const pool = profiles
+    .filter((p) => category === allCategory || p.categories.includes(category.label))
+    .map((p) => ({ p, score: matchScore(p, prefs) }));
+  const top = [...pool].sort((a, b) => b.score - a.score).slice(0, Math.min(MATCH_COUNT, Math.ceil(pool.length / 2)));
+  const rest = pool.filter((x) => !top.includes(x)).sort((a, b) => b.p.loved - a.p.loved).slice(0, 6);
   return {
-    matches: top.map((p) => toCard(p, `${p.match}% match`)),
-    loved: rest.map((p) =>
-      toCard(p, p.urgent ? 'Urgent' : p.addedDaysAgo <= 3 ? 'New' : `${p.loved} saves`),
-    ),
-    tiles: categories.filter((c) => filter === 'all' || c.kinds.includes(filter)),
+    matches: top.map(({ p, score }) => toCard(p, `${score}% match`)),
+    loved: rest.map(({ p }) => toCard(p, p.urgent ? 'Urgent' : p.addedDaysAgo <= 3 ? 'New' : `${p.loved} saves`)),
   };
 }
 
 export default function Home() {
-  const [filter, setFilter] = useState<Filter>('all');
-  const kindLabel = filters.find((f) => f.value === filter)!.label.toLowerCase();
+  const [category, setCategory] = useState<Category>(allCategory);
+  const label = category === allCategory ? 'pets' : category.label.toLowerCase();
   const [query, setQuery] = useState('');
   const [radius, setRadius] = useState('25 km');
   const { unread } = useInbox();
-  const { saved, treats } = useApp();
+  const { saved, treats, preferences, stories: myStories, user } = useApp();
   // The game stars a pet you saved, so playing keeps them on your mind.
   const buddy = getProfile(saved[0] ?? 'luna');
 
-  const { matches, loved, tiles } = homeLists(filter);
-  const kindParam = filter === 'all' ? {} : { kind: filter };
+  const { matches, loved } = homeLists(category, preferences);
+  const browseParams = category === allCategory ? {} : { category: category.label };
+  const pick = (c: Category) => setCategory(c === category ? allCategory : c);
 
   const search = () => {
     router.push({ pathname: '/browse', params: { q: query.trim() } });
@@ -97,29 +93,18 @@ export default function Home() {
             returnKeyType="search"
             onSubmitEditing={search}
           />
-          <Pressable style={styles.filterButton} onPress={() => router.push('/browse')}>
+          <Pressable
+            style={styles.filterButton}
+            onPress={() => router.push({ pathname: '/onboarding/about-you', params: { edit: 'filters' } })}
+          >
             <Icon source={require('../../../assets/figma/icon-filters.svg')} size={20} />
           </Pressable>
         </FadeInUp>
 
-        <FadeInUp delay={140} style={styles.filters}>
-          <KindSwitch options={[...filters]} value={filter} onChange={setFilter} />
-        </FadeInUp>
-
-        <FadeInUp delay={210} style={styles.section}>
-          <SectionHeader title="Popular now" onSeeAll={() => router.push({ pathname: '/browse', params: kindParam })} />
+        <FadeInUp delay={140} style={styles.section}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-            {tiles.map((c) => (
-              <Pressable
-                key={c.label}
-                style={styles.tile}
-                onPress={() => router.push({ pathname: '/browse', params: { category: c.label, ...kindParam } })}
-              >
-                <Image source={c.photo} style={styles.tilePhoto} contentFit="cover" />
-                <Text style={styles.tileLabel} numberOfLines={1}>
-                  {c.label}
-                </Text>
-              </Pressable>
+            {[allCategory, ...categories].map((c) => (
+              <CategoryTile key={c.label} category={c} selected={category === c} onPress={() => pick(c)} />
             ))}
           </ScrollView>
         </FadeInUp>
@@ -143,17 +128,17 @@ export default function Home() {
             {matches.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
-            {!matches.length && <Text style={styles.empty}>No {kindLabel} in this list right now.</Text>}
+            {!matches.length && <Text style={styles.empty}>No {label} in this list right now.</Text>}
           </ScrollView>
         </FadeInUp>
 
         <FadeInUp delay={350} style={styles.section}>
-          <SectionHeader title="Most loved this week" onSeeAll={() => router.push({ pathname: '/browse', params: kindParam })} />
+          <SectionHeader title="Most loved this week" onSeeAll={() => router.push({ pathname: '/browse', params: browseParams })} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {loved.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
-            {!loved.length && <Text style={styles.empty}>No {kindLabel} in this list right now.</Text>}
+            {!loved.length && <Text style={styles.empty}>No {label} in this list right now.</Text>}
           </ScrollView>
         </FadeInUp>
 
@@ -166,49 +151,19 @@ export default function Home() {
             </Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+            {myStories.map((st) => (
+              <StoryCard key={st.id} story={myStoryCard(st, user)} onShare={() => shareStory(st)} />
+            ))}
             {stories.map((s) => (
-              <View key={s.id} style={styles.story}>
-                <View style={styles.storyPhotos}>
-                  <View style={[styles.storyPhoto, styles.storyBefore]}>
-                    {/* Same pet as "now", dimmed behind kennel bars, so the pair reads as one story. */}
-                    <Image source={s.now} style={StyleSheet.absoluteFill} contentFit="cover" blurRadius={1} />
-                    <View style={[StyleSheet.absoluteFill, styles.storyDim]} />
-                    <View style={[StyleSheet.absoluteFill, styles.bars]}>
-                      {Array.from({ length: 6 }, (_, i) => (
-                        <View key={i} style={styles.bar} />
-                      ))}
-                    </View>
-                    <View style={[styles.storyLabel, { backgroundColor: 'rgba(27,27,27,0.7)' }]}>
-                      <Text style={styles.storyLabelText}>Before · shelter</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.storyPhoto, styles.storyNow]}>
-                    <Image source={s.now} style={StyleSheet.absoluteFill} contentFit="cover" />
-                    <View style={[styles.storyLabel, { backgroundColor: colors.purple }]}>
-                      <Text style={styles.storyLabelText}>Now · home</Text>
-                    </View>
-                  </View>
-                  <View style={styles.storySwap}>
-                    <Icon source={require('../../../assets/figma/story-swap.svg')} size={18} />
-                  </View>
-                </View>
-                <Text style={styles.quote}>{s.quote}</Text>
-                <View style={styles.storyFooter}>
-                  <Image source={s.avatar} style={styles.avatar} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.storyNames}>{s.names}</Text>
-                    <Text style={styles.storyMeta}>{s.meta}</Text>
-                  </View>
-                  <Icon source={require('../../../assets/figma/icon-arrow.svg')} size={20} />
-                </View>
-              </View>
+              <StoryCard
+                key={s.id}
+                story={{ photo: s.now, quote: s.quote, names: s.names, meta: s.meta, avatar: s.avatar }}
+              />
             ))}
           </ScrollView>
           <Pressable
             style={styles.share}
-            onPress={() =>
-              Alert.alert('Share your story', 'Adopted through 4 Paws? Story sharing is coming soon — we can’t wait to see your photos!')
-            }
+            onPress={() => router.push('/story/new')}
           >
             <Icon source={require('../../../assets/figma/icon-plus.svg')} size={16} />
             <Text style={styles.shareText}>Share your story</Text>
@@ -293,18 +248,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  filters: { paddingHorizontal: 16, marginTop: 16 },
   section: { marginTop: 24, gap: 10 },
   row: { paddingHorizontal: 16, gap: 12 },
-  tile: { width: 80, gap: 8, alignItems: 'center' },
-  tilePhoto: { width: 80, height: 80, borderRadius: 12, backgroundColor: colors.greyBg },
-  tileLabel: {
-    fontFamily: fonts.semiBold,
-    fontSize: 10,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: colors.black,
-  },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, marginTop: -2 },
   stat: { fontFamily: fonts.regular, fontSize: 12, color: colors.greyMuted },
   statStrong: { fontFamily: fonts.semiBold, color: colors.black },
@@ -320,57 +265,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
-  storyPhotos: { flexDirection: 'row', gap: 6, height: 130 },
-  storyPhoto: { flex: 1, overflow: 'hidden', padding: 8 },
-  storyBefore: {
-    opacity: 0.8,
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
-  },
-  storyNow: {
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderTopLeftRadius: 4,
-    borderBottomLeftRadius: 4,
-  },
-  storyLabel: { alignSelf: 'flex-start', borderRadius: 100, paddingHorizontal: 8, paddingVertical: 3 },
-  storyLabelText: {
-    fontFamily: fonts.semiBold,
-    fontSize: 9,
-    letterSpacing: 0.54,
-    textTransform: 'uppercase',
-    color: colors.white,
-  },
-  storySwap: {
-    position: 'absolute',
-    left: 124,
-    top: 44,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderColor: '#F1EEE7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quote: {
-    fontFamily: fonts.medium,
-    fontSize: 12,
-    lineHeight: 17,
-    color: colors.black,
-    marginTop: 14,
-    paddingHorizontal: 4,
-  },
-  storyFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, paddingHorizontal: 4 },
-  storyDim: { backgroundColor: 'rgba(60,60,70,0.45)' },
-  bars: { flexDirection: 'row', justifyContent: 'space-evenly' },
-  bar: { width: 3, height: '100%', backgroundColor: 'rgba(220,220,220,0.75)' },
-  avatar: { width: 32, height: 32, borderRadius: 16 },
-  storyNames: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.black },
-  storyMeta: { fontFamily: fonts.regular, fontSize: 11, color: colors.greyMuted },
   share: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16 },
   empty: { fontFamily: fonts.regular, fontSize: 14, color: colors.grey, paddingVertical: 24 },
   shareText: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.purple },

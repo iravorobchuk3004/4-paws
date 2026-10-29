@@ -22,17 +22,17 @@ const slides = [
   {
     title: 'Find a friend who fits your life',
     text: 'Tell us about your home and routine, and we match you with animals that will be happy with you.',
-    image: require('../../assets/figma/luna-hero.jpg'),
+    image: require('../../assets/pets/maxi.jpg'),
   },
   {
     title: 'Support an animal’s care',
     text: 'Not ready to adopt? Give to a named animal’s care fund and follow how they get better.',
-    image: require('../../assets/figma/care-bella.jpg'),
+    image: require('../../assets/pets/milo.jpg'),
   },
   {
     title: 'Found a pet? We’ll help',
     text: 'Share a photo and the place in three short steps. Shelters and volunteers nearby get your request.',
-    image: require('../../assets/figma/found-photo.jpg'),
+    image: require('../../assets/pets/boni.jpg'),
   },
 ];
 

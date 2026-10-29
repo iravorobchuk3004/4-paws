@@ -79,7 +79,7 @@ export default function AboutYou() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavHeader step={edit ? 'Preferences' : 'Step 3/3'} />
+      <NavHeader step={edit === 'filters' ? 'Filters' : edit ? 'Preferences' : 'Step 3/3'} />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         <PageHeading
           title="A little about you"
@@ -111,7 +111,10 @@ export default function AboutYou() {
       </ScrollView>
 
       <View style={styles.bottom}>
-        <PrimaryButton title={edit ? 'Save preferences' : 'Show my matches'} onPress={save} />
+        <PrimaryButton
+          title={edit === 'filters' ? 'Update my matches' : edit ? 'Save preferences' : 'Show my matches'}
+          onPress={save}
+        />
       </View>
     </SafeAreaView>
   );

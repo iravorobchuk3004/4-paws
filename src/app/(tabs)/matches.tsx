@@ -7,14 +7,18 @@ import { FadeInUp } from '@/components/anim';
 import { PetRow, Tag } from '@/components/PetRow';
 import { Chip, NavHeader } from '@/components/ui';
 import { ageInYears, PetProfile, profiles } from '@/data/profiles';
+import { matchScore } from '@/lib/match';
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 const sorts = ['Best match', 'Nearest', 'Newest', 'Age'];
 
 export default function Matches() {
   const [sort, setSort] = useState('Best match');
+  const { preferences } = useApp();
+  const scored = profiles.map((p) => ({ ...p, match: matchScore(p, preferences) }));
 
-  const sorted = [...profiles].sort((a, b) => {
+  const sorted = scored.sort((a, b) => {
     if (sort === 'Nearest') return parseFloat(a.distance) - parseFloat(b.distance);
     if (sort === 'Age') return ageInYears(a.age) - ageInYears(b.age);
     if (sort === 'Newest') return a.addedDaysAgo - b.addedDaysAgo;
@@ -58,7 +62,7 @@ function Group({ title, pets }: { title: string; pets: PetProfile[] }) {
       <View style={styles.groupHeader}>
         <Text style={styles.groupTitle}>{title}</Text>
         <Text style={styles.count}>
-          {pets.length} {pets.length === 1 ? 'dog' : 'dogs'}
+          {pets.length} {pets.length === 1 ? 'pet' : 'pets'}
         </Text>
       </View>
       {pets.map((pet) => (

@@ -8,6 +8,8 @@ import { PetRow, Tag } from '@/components/PetRow';
 import { Chip, Icon, NavHeader } from '@/components/ui';
 import { categories } from '@/data/pets';
 import { PetProfile, profiles } from '@/data/profiles';
+import { matchScore } from '@/lib/match';
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 const kinds = [
@@ -22,6 +24,7 @@ type Kind = PetProfile['kind'];
 export default function Browse() {
   const params = useLocalSearchParams<{ q?: string; category?: string; kind?: Kind }>();
   const [query, setQuery] = useState(params.q ?? '');
+  const { preferences } = useApp();
   const [kind, setKind] = useState<Kind | null>(params.kind ?? null);
   const [category, setCategory] = useState<string | null>(params.category ?? null);
 
@@ -80,7 +83,7 @@ export default function Browse() {
           {results.map((pet, i) => (
             <FadeInUp key={pet.id} delay={i * 50}>
               <PetRow pet={pet} photo={pet.thumb} note={pet.note} onPress={() => router.push(`/pet/${pet.id}`)}>
-                <Tag label={`${pet.match}% match`} />
+                <Tag label={`${matchScore(pet, preferences)}% match`} />
                 {pet.urgent && <Tag label="Urgent" tone="purple" />}
               </PetRow>
             </FadeInUp>

@@ -8,12 +8,13 @@ import { Tag } from '@/components/PetRow';
 import { Chip, FormField, Icon, NavHeader, PrimaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
 import { isValidEmail, useApp } from '@/store';
+import { matchScore } from '@/lib/match';
 import { colors, fonts } from '@/theme';
 
 export default function Meeting() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const pet = getProfile(id);
-  const { apply, user, setUser } = useApp();
+  const { apply, user, setUser, preferences } = useApp();
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -60,7 +61,7 @@ export default function Meeting() {
               {pet.shelter} shelter · {pet.distance}
             </Text>
           </View>
-          <Tag label={`${pet.match}% match`} />
+          <Tag label={`${matchScore(pet, preferences)}% match`} />
         </View>
 
         <View style={{ gap: 12 }}>

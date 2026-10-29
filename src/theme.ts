@@ -15,6 +15,11 @@ export const colors = {
   pink: '#FFB6D4',
   pinkTag: '#FFD7E8',
   pinkLight: '#FFE8F1',
+  // Splash/confetti accents.
+  lime: '#DCFA9D',
+  yellow: '#FFF369',
+  limeSoft: '#EEFCCB',
+  yellowSoft: '#FFF9B8',
   error: '#C0392B',
 };
 

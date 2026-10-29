@@ -17,6 +17,7 @@ export type FoundCase = {
   updates: CaseUpdate[];
 };
 export type Donation = { id: string; amount: number; at: number };
+export type Story = { id: string; at: number; petName: string; shelter: string; when: string; text: string; photo: string };
 
 type Data = {
   seenIntro: boolean;
@@ -33,6 +34,7 @@ type Data = {
   // Treat Run mini-game: bones collected in total and the best single run.
   treats: number;
   bestRun: number;
+  stories: Story[];
   notifications: { meetings: boolean; news: boolean };
 };
 
@@ -52,6 +54,7 @@ type AppState = Data & {
   resolveReport: (id: string) => void;
   markInboxRead: () => void;
   addTreats: (bones: number) => void;
+  addStory: (story: Omit<Story, 'id' | 'at'>) => Story;
   resetAll: () => void;
 };
 
@@ -77,6 +80,7 @@ const initial: Data = {
   inboxReadAt: 0,
   treats: 0,
   bestRun: 0,
+  stories: [],
   notifications: { meetings: true, news: false },
 };
 
@@ -131,6 +135,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     resolveReport: (id) =>
       patch((d) => ({ reports: d.reports.map((r) => (r.id === id ? { ...r, resolved: true } : r)) })),
     markInboxRead: () => patch({ inboxReadAt: Date.now() }),
+    addStory: (story) => {
+      const full = { ...story, id: `st-${Date.now()}`, at: Date.now() };
+      patch((d) => ({ stories: [full, ...d.stories] }));
+      return full;
+    },
     addTreats: (bones) => patch((d) => ({ treats: d.treats + bones, bestRun: Math.max(d.bestRun, bones) })),
     // Keep the intro hidden after a reset: the person has already seen it.
     resetAll: () => setData({ ...initial, seenIntro: true }),

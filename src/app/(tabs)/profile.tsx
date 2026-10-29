@@ -122,9 +122,9 @@ export default function Profile() {
         </FadeInUp>
 
         <FadeInUp delay={140} style={styles.stats}>
-          <Stat value={saved.length} label="Saved" />
-          <Stat value={applications.length} label={applications.length === 1 ? 'Application' : 'Applications'} />
-          <Stat value={reports.length} label={reports.length === 1 ? 'Pet helped' : 'Pets helped'} />
+          <Stat value={saved.length} label="Saved" color={colors.pinkLight} />
+          <Stat value={applications.length} label={applications.length === 1 ? 'Application' : 'Applications'} color={colors.limeSoft} />
+          <Stat value={reports.length} label={reports.length === 1 ? 'Pet helped' : 'Pets helped'} color={colors.yellowSoft} />
         </FadeInUp>
 
         {meeting && (
@@ -165,9 +165,9 @@ export default function Profile() {
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Stat({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <View style={[card, styles.stat]}>
+    <View style={[styles.stat, { backgroundColor: color }]}>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   editText: { fontFamily: fonts.regular, fontSize: 14, color: colors.black },
   stats: { flexDirection: 'row', gap: 8 },
-  stat: { flex: 1, padding: 12 },
+  stat: { flex: 1, padding: 12, borderRadius: 20 },
   statValue: { fontFamily: fonts.bold, fontSize: 20, color: colors.black },
   statLabel: { fontFamily: fonts.regular, fontSize: 12, color: colors.grey },
   meeting: {

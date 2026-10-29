@@ -10,6 +10,7 @@ import { LikePop } from '@/components/anim';
 import { Icon, NavHeader, PrimaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
 import { useApp } from '@/store';
+import { matchScore } from '@/lib/match';
 import { colors, fonts } from '@/theme';
 
 const card = {
@@ -25,7 +26,7 @@ const card = {
 export default function PetDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const pet = getProfile(id);
-  const { saved, toggleSaved, applications } = useApp();
+  const { saved, toggleSaved, applications, preferences } = useApp();
   const isSaved = saved.includes(pet.id);
   const applied = applications.includes(pet.id);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -67,7 +68,7 @@ export default function PetDetails() {
             size={20}
           />
           <View style={{ flex: 1 }} />
-          <Tag label={`${pet.match}% match`} />
+          <Tag label={`${matchScore(pet, preferences)}% match`} />
         </View>
         <Text style={styles.meta}>{pet.breed}</Text>
 

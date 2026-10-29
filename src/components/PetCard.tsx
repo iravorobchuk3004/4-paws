@@ -21,6 +21,11 @@ export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
     <PressableScale style={styles.card} onPress={onPress} scaleTo={0.97}>
       <View style={styles.photo}>
         <Image source={pet.photo} style={StyleSheet.absoluteFill} contentFit="cover" />
+        <View style={styles.tag}>
+          <Text style={styles.tagText} numberOfLines={1}>
+            {pet.tag}
+          </Text>
+        </View>
         <Pressable
           style={styles.like}
           onPress={() => toggleSaved(pet.id)}
@@ -32,16 +37,11 @@ export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
         </Pressable>
       </View>
       <View style={{ gap: 4 }}>
-        <View style={styles.row}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{pet.name}</Text>
-            <Icon source={sexIcons[pet.sex]} size={18} />
-          </View>
-          <View style={styles.tag}>
-            <Text style={styles.tagText} numberOfLines={1}>
-              {pet.tag}
-            </Text>
-          </View>
+        <View style={styles.nameRow}>
+          <Text style={styles.name} numberOfLines={1}>
+            {pet.name}
+          </Text>
+          <Icon source={sexIcons[pet.sex]} size={18} />
         </View>
         <Text style={styles.meta} numberOfLines={1}>
           {pet.breed} · {pet.age} · {pet.distance}
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   card: {
     width: 164,
     backgroundColor: colors.white,
-    borderRadius: 8,
+    borderRadius: 16,
     overflow: 'hidden',
     paddingBottom: 8,
     gap: 8,
@@ -65,22 +65,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    width: 34,
-    height: 26,
-    borderRadius: 100,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingHorizontal: 8 },
+  name: { flexShrink: 1, fontFamily: fonts.semiBold, fontSize: 16, lineHeight: 22, color: colors.black },
+  tag: {
+    position: 'absolute',
+    left: 8,
+    top: 8,
+    height: 22,
+    justifyContent: 'center',
+    borderRadius: 11,
+    paddingHorizontal: 8,
     backgroundColor: colors.pinkLight,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-  },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  name: { fontFamily: fonts.semiBold, fontSize: 16, lineHeight: 22, color: colors.black },
-  tag: { height: 20, justifyContent: 'center', borderRadius: 4, paddingHorizontal: 6, backgroundColor: colors.pinkLight },
   tagText: {
     fontFamily: fonts.semiBold,
     fontSize: 9,

@@ -50,5 +50,33 @@
   "snowball": {
     "file": "File:Rabbit resting.jpg",
     "license": "CC0"
+  },
+  "luna": {
+    "file": "File:Fawn and white Welsh Corgi puppy standing on rear legs and sticking out the tongue.jpg",
+    "license": "CC0"
+  },
+  "bucks": {
+    "file": "File:Clyde The Bulldog.jpg",
+    "license": "Public domain"
+  },
+  "boni": {
+    "file": "File:Dog at N\u00f8rre Vorup\u00f8r Strand.jpg",
+    "license": "CC0"
+  },
+  "milo": {
+    "file": "File:Tabby cat with blue eyes-3336579.jpg",
+    "license": "CC0"
+  },
+  "cookie": {
+    "file": "File:French bulldog in life jacket.jpg",
+    "license": "CC0"
+  },
+  "molly": {
+    "file": "File:Dog with dumbbell.jpg",
+    "license": "CC0"
+  },
+  "maxi": {
+    "file": "File:Golden-retriever-1827903 1920.jpg",
+    "license": "CC0"
   }
 }
