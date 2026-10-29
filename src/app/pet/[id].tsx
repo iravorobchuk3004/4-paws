@@ -2,10 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ComponentProps, useState } from 'react';
-import { Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Tag } from '@/components/PetRow';
+import { ShelterMap } from '@/components/ShelterMap';
 import { LikePop } from '@/components/anim';
 import { Icon, NavHeader, PrimaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
@@ -110,23 +111,7 @@ export default function PetDetails() {
           </Pressable>
         </Section>
 
-        <Pressable
-          style={[card, styles.shelter]}
-          onPress={() =>
-            Linking.openURL(
-              `https://maps.google.com/?q=${encodeURIComponent(`${pet.shelter} animal shelter ${pet.shelterMeta.split(' · ')[0]}`)}`,
-            )
-          }
-        >
-          <View style={styles.shelterIcon}>
-            <Icon source={require('../../../assets/figma/shelter-home.svg')} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.shelterName}>{pet.shelter}</Text>
-            <Text style={styles.shelterMeta}>{pet.shelterMeta.split(' · ')[0]}</Text>
-          </View>
-          <Icon source={require('../../../assets/figma/chevron-right.svg')} size={20} />
-        </Pressable>
+        <ShelterMap shelter={pet.shelter} />
       </ScrollView>
 
       <View style={styles.bottom}>
@@ -222,10 +207,6 @@ const styles = StyleSheet.create({
   healthText: { fontFamily: fonts.medium, fontSize: 13, color: colors.purple },
   fitText: { fontFamily: fonts.medium, fontSize: 13, color: colors.black },
   about: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: colors.black },
-  shelter: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 12, paddingRight: 16, paddingVertical: 12 },
-  shelterIcon: { padding: 12, borderRadius: 100, backgroundColor: colors.purpleTint },
-  shelterName: { fontFamily: fonts.semiBold, fontSize: 16, color: colors.black },
-  shelterMeta: { fontFamily: fonts.regular, fontSize: 12, color: colors.grey },
   bottom: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
   playButton: {
     width: 56,

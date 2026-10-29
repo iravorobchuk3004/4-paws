@@ -45,6 +45,17 @@ const settings = [
     icon: require('../../../assets/figma/set-shield.svg'),
     onPress: () => router.push('/settings/help'),
   },
+  // Developer-only shortcut to the component playground.
+  ...(__DEV__
+    ? [
+        {
+          title: 'Storybook',
+          text: 'Design system · all components',
+          icon: require('../../../assets/figma/set-paw.svg'),
+          onPress: () => router.push('/storybook'),
+        },
+      ]
+    : []),
 ];
 
 export default function Profile() {

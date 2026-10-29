@@ -5,7 +5,10 @@
   "dependencies": {
     "@expo-google-fonts/poppins": "^0.4.1",
     "@expo/vector-icons": "^15.0.2",
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "9.2.1",
+    "@react-native-community/slider": "5.2.1",
     "expo": "~58.0.19",
     "expo-constants": "~58.0.14",
     "expo-font": "~58.0.11",
@@ -14,17 +17,28 @@
     "expo-image-picker": "~58.0.10",
     "expo-linear-gradient": "~58.0.3",
     "expo-linking": "~58.0.15",
+    "expo-location": "~58.0.20",
     "expo-router": "~58.0.28",
     "expo-status-bar": "~58.0.4",
     "react": "19.3.0",
+    "react-dom": "19.3.0",
     "react-native": "0.88.0",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-maps": "1.29.11",
+    "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.10.1",
-    "react-native-screens": "~4.30.0"
+    "react-native-screens": "~4.30.0",
+    "react-native-svg": "15.16.0",
+    "react-native-worklets": "0.13.0"
   },
   "devDependencies": {
+    "@storybook/addon-ondevice-actions": "^10.7.0",
+    "@storybook/addon-ondevice-controls": "^10.7.0",
+    "@storybook/react-native": "^10.7.0",
     "@types/react": "~19.3.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~58.0.4",
+    "storybook": "^10.6.5",
     "typescript": "~6.0.3"
   },
   "scripts": {

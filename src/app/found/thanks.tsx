@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Celebration } from '@/components/Celebration';
+import { Celebration, critterFor } from '@/components/Celebration';
 import { useFoundReport } from '@/components/FoundReport';
 import { Tag } from '@/components/PetRow';
 import { Icon, PrimaryButton, SecondaryButton } from '@/components/ui';
@@ -21,7 +21,7 @@ export default function FoundThanks() {
       <ScrollView contentContainerStyle={styles.body}>
         <View style={{ gap: 12, paddingTop: 32 }}>
           <Text style={styles.title}>Thank you for helping</Text>
-          <Celebration />
+          <Celebration animal={critterFor(report.animal)} />
         </View>
 
         <View style={styles.card}>

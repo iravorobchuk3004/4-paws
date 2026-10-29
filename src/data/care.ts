@@ -2,6 +2,7 @@
 export type CareNeed = {
   id: string;
   name: string;
+  kind: 'dog' | 'cat' | 'other';
   need: string;
   shelter: string;
   tag: string;
@@ -16,6 +17,7 @@ export const careNeeds: CareNeed[] = [
   {
     id: 'casy',
     name: 'Casy',
+    kind: 'dog',
     need: 'Skin treatment',
     shelter: 'Paw Haven',
     tag: 'Medicine',
@@ -27,6 +29,7 @@ export const careNeeds: CareNeed[] = [
   {
     id: 'milo',
     name: 'Milo',
+    kind: 'cat',
     need: 'Eye surgery',
     shelter: 'Safe Paws',
     tag: 'Surgery',
@@ -38,6 +41,7 @@ export const careNeeds: CareNeed[] = [
   {
     id: 'bella',
     name: 'Bella',
+    kind: 'other',
     need: 'Emergency care',
     shelter: 'Little Hearts',
     tag: 'Urgent',

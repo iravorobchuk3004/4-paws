@@ -24,7 +24,14 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "4 Paws uses your location to show nearby shelters and to mark where you found a pet."
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "fourpaws",
     "experiments": {

@@ -1,12 +1,14 @@
-import { Image } from 'expo-image';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import MapView, { MapPressEvent, Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PageTitle } from '@/components/form';
 import { FormField, Icon, NavHeader, PrimaryButton } from '@/components/ui';
 import { useFoundReport } from '@/components/FoundReport';
+import { addressFor, Coords, HAMBURG, locateMe } from '@/lib/location';
 import { colors, fonts } from '@/theme';
 
 const pin = require('../../../assets/figma/field-user.svg');
@@ -14,6 +16,24 @@ const pin = require('../../../assets/figma/field-user.svg');
 export default function FoundLocation() {
   const { report, update } = useFoundReport();
   const [submitted, setSubmitted] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const map = useRef<MapView>(null);
+
+  // Drop the found-pet pin and fill the address from it.
+  const placePin = async (coords: Coords) => {
+    update({ coords });
+    const address = await addressFor(coords);
+    if (address) update({ coords, location: address });
+  };
+
+  const useMyLocation = async () => {
+    setLocating(true);
+    const me = await locateMe();
+    setLocating(false);
+    if (!me) return;
+    map.current?.animateToRegion({ ...me, latitudeDelta: 0.008, longitudeDelta: 0.008 }, 500);
+    placePin(me);
+  };
   const locationError = submitted && !report.location.trim() && 'Add where you found the pet, or use your location.';
   const whenError = submitted && !report.when.trim() && 'Add roughly when you saw the pet.';
 
@@ -35,12 +55,42 @@ export default function FoundLocation() {
           subtitle="The exact place helps volunteers reach the pet quickly."
         />
 
-        <Image source={require('../../../assets/figma/found-map.png')} style={styles.map} contentFit="cover" />
+        <View style={styles.map}>
+          <MapView
+            ref={map}
+            style={StyleSheet.absoluteFill}
+            initialRegion={{ ...(report.coords ?? HAMBURG), latitudeDelta: 0.06, longitudeDelta: 0.06 }}
+            showsUserLocation
+            onPress={(e: MapPressEvent) => placePin(e.nativeEvent.coordinate)}
+          >
+            {report.coords && (
+              <Marker
+                coordinate={report.coords}
+                draggable
+                onDragEnd={(e) => placePin(e.nativeEvent.coordinate)}
+                anchor={{ x: 0.5, y: 1 }}
+              >
+                <View style={styles.pin}>
+                  <FontAwesome6 name="paw" solid size={16} color={colors.white} />
+                </View>
+                <View style={styles.pinTip} />
+              </Marker>
+            )}
+          </MapView>
+          {!report.coords && (
+            <View style={styles.mapHint} pointerEvents="none">
+              <Text style={styles.mapHintText}>Tap the map where you found the pet</Text>
+            </View>
+          )}
+        </View>
 
-        {/* Demo: fills the area from the design until real location lookup is connected. */}
-        <Pressable style={styles.useLocation} onPress={() => update({ location: 'Hamburg, Wandsbek' })}>
-          <Icon source={require('../../../assets/figma/crosshair.svg')} size={20} />
-          <Text style={styles.useLocationText}>Use my current location</Text>
+        <Pressable style={styles.useLocation} onPress={useMyLocation} disabled={locating}>
+          {locating ? (
+            <ActivityIndicator color={colors.purple} />
+          ) : (
+            <Icon source={require('../../../assets/figma/crosshair.svg')} size={20} />
+          )}
+          <Text style={styles.useLocationText}>{locating ? 'Finding you…' : 'Use my current location'}</Text>
         </Pressable>
 
         <View style={{ gap: 16 }}>
@@ -83,7 +133,40 @@ export default function FoundLocation() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
   body: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 24, gap: 24 },
-  map: { height: 180, borderRadius: 20 },
+  map: { height: 240, borderRadius: 20, overflow: 'hidden', backgroundColor: colors.greyBg },
+  mapHint: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 12,
+    paddingVertical: 8,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    alignItems: 'center',
+  },
+  mapHintText: { fontFamily: fonts.medium, fontSize: 13, color: colors.black },
+  pin: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.purple,
+    borderWidth: 3,
+    borderColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinTip: {
+    alignSelf: 'center',
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: colors.purple,
+    marginTop: -2,
+  },
   useLocation: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -2,7 +2,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Celebration } from '@/components/Celebration';
+import { Celebration, critterFor } from '@/components/Celebration';
+import { getProfile } from '@/data/profiles';
 import { Icon, PrimaryButton, SecondaryButton } from '@/components/ui';
 import { colors, fonts } from '@/theme';
 
@@ -34,7 +35,7 @@ export default function ApplicationSent() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ marginTop: 24 }}>
-        <Celebration />
+        <Celebration animal={critterFor(getProfile(id).kind, getProfile(id).categories)} />
       </View>
 
       <View style={styles.body}>

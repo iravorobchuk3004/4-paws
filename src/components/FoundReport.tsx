@@ -17,6 +17,7 @@ export type FoundReport = {
   situation: string;
   name: string;
   phone: string;
+  coords?: { latitude: number; longitude: number };
   submitted?: boolean;
 };
 

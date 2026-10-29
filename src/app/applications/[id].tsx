@@ -5,6 +5,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Tag } from '@/components/PetRow';
+import { ShelterMap } from '@/components/ShelterMap';
 import { Timeline } from '@/components/Timeline';
 import { NavHeader, PrimaryButton, SecondaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
@@ -67,6 +68,8 @@ export default function ApplicationStatus() {
             <Text style={styles.meta}>Request withdrawn.</Text>
           )}
         </View>
+
+        {active && <ShelterMap shelter={pet.shelter} />}
 
         {active && contact && (
           <View style={{ gap: 12 }}>

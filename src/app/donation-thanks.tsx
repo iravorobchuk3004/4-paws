@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Celebration } from '@/components/Celebration';
+import { Celebration, critterFor } from '@/components/Celebration';
 import { Tag } from '@/components/PetRow';
 import { Progress } from '@/components/Progress';
 import { PrimaryButton, SecondaryButton } from '@/components/ui';
@@ -33,7 +33,7 @@ export default function DonationThanks() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.title}>Thank you for helping</Text>
-        <Celebration />
+        <Celebration animal={critterFor(need.kind)} />
 
         <View style={styles.card}>
           <View style={styles.row}>

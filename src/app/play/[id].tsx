@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Celebration } from '@/components/Celebration';
+import { Celebration, critterFor } from '@/components/Celebration';
 import { Progress } from '@/components/Progress';
 import { NavHeader, PrimaryButton, SecondaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
@@ -216,7 +216,7 @@ export default function TreatRun() {
 
       {phase === 'over' && (
         <View style={styles.result}>
-          {newMeal && <Celebration />}
+          {newMeal && <Celebration animal={critterFor(pet.kind, pet.categories)} />}
           <Text style={styles.resultTitle}>{newMeal ? 'You unlocked a meal!' : `${score} bones!`}</Text>
           <Text style={styles.resultText}>
             {score >= bestRun && score > 0 ? 'New best run 🎉' : `Best run: ${bestRun}`}
