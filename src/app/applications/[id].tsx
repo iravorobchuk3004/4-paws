@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Tag } from '@/components/PetRow';
 import { Timeline } from '@/components/Timeline';
-import { Icon, NavHeader, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { NavHeader, PrimaryButton, SecondaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
 import { formatDate, useApp } from '@/store';
 import { colors, fonts } from '@/theme';
@@ -48,9 +48,7 @@ export default function ApplicationStatus() {
           <Image source={pet.thumb} style={styles.photo} contentFit="cover" />
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={styles.name}>Meeting {pet.name}</Text>
-            <Text style={styles.meta}>
-              {pet.breed} · {pet.shelter}
-            </Text>
+            <Text style={styles.meta}>{pet.shelter}</Text>
           </View>
           <Tag label={active ? 'In review' : 'Withdrawn'} tone={active ? 'purple' : 'grey'} />
         </Pressable>
@@ -59,20 +57,19 @@ export default function ApplicationStatus() {
           {active ? (
             <Timeline
               steps={[
-                { title: 'Application sent', text: sentAt ? formatDate(sentAt) : 'Sent', state: 'done' },
-                { title: 'Shelter reviews your details', text: 'Expect a call or email within 2 working days.', state: 'current' },
-                { title: 'Agree a meeting together', text: 'The date is confirmed only after you speak.', state: 'next' },
-                { title: 'Welcome home', text: `Adoption paperwork and taking ${pet.name} home.`, state: 'next' },
+                { title: 'Sent', text: sentAt ? formatDate(sentAt) : '', state: 'done' },
+                { title: 'Shelter review', text: 'Reply in ~2 days', state: 'current' },
+                { title: 'Meet ' + pet.name, text: '', state: 'next' },
+                { title: 'Welcome home', text: '', state: 'next' },
               ]}
             />
           ) : (
-            <Text style={styles.meta}>You withdrew this request. You can send a new one at any time.</Text>
+            <Text style={styles.meta}>Request withdrawn.</Text>
           )}
         </View>
 
         {active && contact && (
           <View style={{ gap: 12 }}>
-            <Text style={styles.sectionTitle}>Contact {pet.shelter}</Text>
             <View style={styles.contactRow}>
               <Pressable style={styles.contact} onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
                 <Ionicons name="call-outline" size={20} color={colors.purple} />
@@ -91,10 +88,16 @@ export default function ApplicationStatus() {
           </View>
         )}
 
-        <View style={styles.note}>
-          <Icon source={require('../../../assets/figma/info.svg')} size={20} />
-          <Text style={styles.noteText}>Shelters reply on working days. Keep your phone nearby.</Text>
-        </View>
+        {active && (
+          <Pressable style={styles.play} onPress={() => router.push(`/play/${pet.id}`)}>
+            <Text style={styles.playEmoji}>🦴</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.playTitle}>While you wait: Treat Run</Text>
+              <Text style={styles.playText}>Play with {pet.name} · bones feed shelter pets</Text>
+            </View>
+            <Ionicons name="play-circle" size={32} color={colors.white} />
+          </Pressable>
+        )}
       </ScrollView>
 
       <View style={styles.bottom}>
@@ -116,7 +119,6 @@ const styles = StyleSheet.create({
   photo: { width: 64, height: 64, borderRadius: 12 },
   name: { fontFamily: fonts.semiBold, fontSize: 16, color: colors.black },
   meta: { fontFamily: fonts.regular, fontSize: 13, lineHeight: 19, color: colors.grey },
-  sectionTitle: { fontFamily: fonts.bold, fontSize: 20, color: colors.black },
   contactRow: { flexDirection: 'row', gap: 12 },
   contact: {
     flex: 1,
@@ -131,7 +133,9 @@ const styles = StyleSheet.create({
     borderColor: colors.purple,
   },
   contactText: { fontFamily: fonts.semiBold, fontSize: 15, color: colors.purple },
-  note: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, backgroundColor: colors.purpleTint },
-  noteText: { flex: 1, fontFamily: fonts.regular, fontSize: 12, lineHeight: 18, color: colors.black },
+  play: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, backgroundColor: colors.purple },
+  playEmoji: { fontSize: 28 },
+  playTitle: { fontFamily: fonts.bold, fontSize: 15, color: colors.white },
+  playText: { fontFamily: fonts.regular, fontSize: 12, color: colors.purpleSelected },
   bottom: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
 });

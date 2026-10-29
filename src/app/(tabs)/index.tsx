@@ -10,8 +10,10 @@ import { PetCard } from '@/components/PetCard';
 import { KindSwitch } from '@/components/KindSwitch';
 import { Icon, SectionHeader } from '@/components/ui';
 import { categories, Pet, stories, toCard } from '@/data/pets';
-import { profiles } from '@/data/profiles';
+import { getProfile, profiles } from '@/data/profiles';
 import { useInbox } from '@/lib/inbox';
+import { mealsFrom } from '@/lib/treats';
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 const filters = [
@@ -46,6 +48,9 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [radius, setRadius] = useState('25 km');
   const { unread } = useInbox();
+  const { saved, treats } = useApp();
+  // The game stars a pet you saved, so playing keeps them on your mind.
+  const buddy = getProfile(saved[0] ?? 'luna');
 
   const { matches, loved, tiles } = homeLists(filter);
   const kindParam = filter === 'all' ? {} : { kind: filter };
@@ -117,6 +122,19 @@ export default function Home() {
               </Pressable>
             ))}
           </ScrollView>
+        </FadeInUp>
+
+        <FadeInUp delay={250} style={styles.section}>
+          <Pressable style={styles.game} onPress={() => router.push(`/play/${buddy.id}`)}>
+            <Image source={buddy.thumb} style={styles.gamePet} contentFit="cover" />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={styles.gameTitle}>Treat Run with {buddy.name}</Text>
+              <Text style={styles.gameText}>
+                🦴 {treats} bones · 🍲 {mealsFrom(treats)} meals for shelter pets
+              </Text>
+            </View>
+            <Ionicons name="play-circle" size={36} color={colors.white} />
+          </Pressable>
         </FadeInUp>
 
         <FadeInUp delay={280} style={styles.section}>
@@ -203,6 +221,19 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
+  game: {
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    paddingRight: 16,
+    borderRadius: 20,
+    backgroundColor: colors.purple,
+  },
+  gamePet: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: colors.white },
+  gameTitle: { fontFamily: fonts.bold, fontSize: 15, color: colors.white },
+  gameText: { fontFamily: fonts.regular, fontSize: 12, color: colors.purpleSelected },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',

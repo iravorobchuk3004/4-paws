@@ -30,6 +30,9 @@ type Data = {
   donations: Donation[];
   reports: FoundCase[];
   inboxReadAt: number;
+  // Treat Run mini-game: bones collected in total and the best single run.
+  treats: number;
+  bestRun: number;
   notifications: { meetings: boolean; news: boolean };
 };
 
@@ -48,6 +51,7 @@ type AppState = Data & {
   addReportUpdate: (id: string, text: string) => void;
   resolveReport: (id: string) => void;
   markInboxRead: () => void;
+  addTreats: (bones: number) => void;
   resetAll: () => void;
 };
 
@@ -71,6 +75,8 @@ const initial: Data = {
   donations: [],
   reports: [],
   inboxReadAt: 0,
+  treats: 0,
+  bestRun: 0,
   notifications: { meetings: true, news: false },
 };
 
@@ -125,6 +131,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     resolveReport: (id) =>
       patch((d) => ({ reports: d.reports.map((r) => (r.id === id ? { ...r, resolved: true } : r)) })),
     markInboxRead: () => patch({ inboxReadAt: Date.now() }),
+    addTreats: (bones) => patch((d) => ({ treats: d.treats + bones, bestRun: Math.max(d.bestRun, bones) })),
     // Keep the intro hidden after a reset: the person has already seen it.
     resetAll: () => setData({ ...initial, seenIntro: true }),
   };

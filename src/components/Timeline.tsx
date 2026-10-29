@@ -33,7 +33,7 @@ export function Timeline({ steps }: { steps: TimelineStep[] }) {
           </View>
           <View style={[styles.text, i < steps.length - 1 && { paddingBottom: 20 }]}>
             <Text style={[styles.title, step.state === 'next' && { color: colors.grey }]}>{step.title}</Text>
-            <Text style={styles.sub}>{step.text}</Text>
+            {!!step.text && <Text style={styles.sub}>{step.text}</Text>}
           </View>
         </View>
       ))}
