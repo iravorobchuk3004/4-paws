@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 const TITLE = '4 Paws';
@@ -20,6 +21,8 @@ const paws = [
 ] as const;
 
 export default function Splash() {
+  const { loaded, user, seenIntro } = useApp();
+  const [animDone, setAnimDone] = useState(false);
   const logoScale = useState(() => new Animated.Value(0))[0];
   const logoSpin = useState(() => new Animated.Value(0))[0];
   const pulse = useState(() => new Animated.Value(1))[0];
@@ -69,9 +72,14 @@ export default function Splash() {
       Animated.delay(250),
       Animated.timing(exit, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]);
-    anim.start(({ finished }) => finished && router.replace('/welcome'));
+    anim.start(({ finished }) => finished && setAnimDone(true));
     return () => anim.stop();
   }, [exit, letters, logoScale, logoSpin, pawSteps, pulse, ripples]);
+
+  // First launch shows the intro; returning users skip straight to Home.
+  useEffect(() => {
+    if (animDone && loaded) router.replace(user ? '/(tabs)' : seenIntro ? '/welcome' : '/intro');
+  }, [animDone, loaded, user, seenIntro]);
 
   return (
     <View style={styles.container}>

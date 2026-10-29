@@ -7,20 +7,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tag } from '@/components/PetRow';
 import { Chip, FormField, Icon, NavHeader, PrimaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
-import { useApp } from '@/store';
+import { isValidEmail, useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 export default function Meeting() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const pet = getProfile(id);
-  const { apply } = useApp();
+  const { apply, user, setUser } = useApp();
+  const [name, setName] = useState(user?.name ?? '');
+  const [phone, setPhone] = useState(user?.phone ?? '');
+  const [email, setEmail] = useState(user?.email ?? '');
+  const [submitted, setSubmitted] = useState(false);
   const [contact, setContact] = useState('Phone');
   const [consent, setConsent] = useState(true);
   const [message, setMessage] = useState(
     `I’m ready to discuss long-term care and would love to meet ${pet.name} this week.`,
   );
 
+  const nameError = submitted && !name.trim() && 'Please enter your name.';
+  const phoneError = submitted && contact === 'Phone' && phone.trim().length < 6 && 'Add a phone number we can call.';
+  const emailError = submitted && !isValidEmail(email) && 'Please enter a valid email.';
+
   const send = () => {
+    setSubmitted(true);
+    if (!name.trim() || !isValidEmail(email) || (contact === 'Phone' && phone.trim().length < 6)) return;
+    // Remember the details so the next form is already filled in.
+    setUser({ name: name.trim(), email: email.trim(), phone: phone.trim() || undefined });
     apply(pet.id);
     router.replace({ pathname: '/application-sent', params: { id: pet.id } });
   };
@@ -58,6 +70,9 @@ export default function Meeting() {
             placeholder="Anna Kovalenko"
             icon={require('../../../assets/figma/field-user.svg')}
             autoComplete="name"
+            value={name}
+            onChangeText={setName}
+            error={nameError}
           />
           <FormField
             label="Phone"
@@ -65,6 +80,9 @@ export default function Meeting() {
             icon={require('../../../assets/figma/field-user.svg')}
             keyboardType="phone-pad"
             autoComplete="tel"
+            value={phone}
+            onChangeText={setPhone}
+            error={phoneError}
           />
           <FormField
             label="Email"
@@ -73,6 +91,9 @@ export default function Meeting() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            value={email}
+            onChangeText={setEmail}
+            error={emailError}
           />
         </View>
 

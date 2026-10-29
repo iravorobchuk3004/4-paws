@@ -116,13 +116,20 @@ export function FormField({
   label,
   icon,
   hint,
+  error,
   trailing,
   ...input
-}: TextInputProps & { label: string; icon: ImageProps['source']; hint?: string; trailing?: ReactNode }) {
+}: TextInputProps & {
+  label: string;
+  icon: ImageProps['source'];
+  hint?: string;
+  error?: string | false;
+  trailing?: ReactNode;
+}) {
   return (
     <View style={{ gap: 4 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <View style={styles.input}>
+      <View style={[styles.input, !!error && { borderColor: colors.error }]}>
         <Icon source={icon} />
         <TextInput
           placeholderTextColor="rgba(98,97,95,0.43)"
@@ -131,7 +138,11 @@ export function FormField({
         />
         {trailing}
       </View>
-      {hint && <Text style={styles.hint}>{hint}</Text>}
+      {error ? (
+        <Text style={[styles.hint, { color: colors.error }]}>{error}</Text>
+      ) : (
+        hint && <Text style={styles.hint}>{hint}</Text>
+      )}
     </View>
   );
 }
@@ -140,9 +151,11 @@ export function SectionHeader({ title, onSeeAll }: { title: string; onSeeAll?: (
   return (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <Pressable onPress={onSeeAll} hitSlop={8}>
-        <Text style={styles.seeAll}>See all</Text>
-      </Pressable>
+      {onSeeAll && (
+        <Pressable onPress={onSeeAll} hitSlop={8}>
+          <Text style={styles.seeAll}>See all</Text>
+        </Pressable>
+      )}
     </View>
   );
 }

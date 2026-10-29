@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeInUp } from '@/components/anim';
@@ -9,26 +10,55 @@ import { PetCard } from '@/components/PetCard';
 import { Chip, Icon, SectionHeader } from '@/components/ui';
 import { categories, mostLoved, Pet, perfectMatches, stories } from '@/data/pets';
 import { profiles } from '@/data/profiles';
+import { useInbox } from '@/lib/inbox';
 import { colors, fonts } from '@/theme';
 
 const filters = ['All', 'Dogs', 'Cats', 'Other'];
+const kindFor: Record<string, string | undefined> = { Dogs: 'dog', Cats: 'cat', Other: 'other' };
+const radii = ['10 km', '25 km', '50 km'];
 
-const openPet = (pet: Pet) => {
-  if (profiles.some((p) => p.id === pet.id)) router.push(`/pet/${pet.id}`);
-};
+const openPet = (pet: Pet) => router.push(`/pet/${pet.id}`);
+const matchesFilter = (pet: Pet, filter: string) =>
+  filter === 'All' || profiles.find((p) => p.id === pet.id)?.kind === kindFor[filter];
 
 export default function Home() {
   const [filter, setFilter] = useState('All');
+  const [query, setQuery] = useState('');
+  const [radius, setRadius] = useState('25 km');
+  const { unread } = useInbox();
+
+  const matches = perfectMatches.filter((p) => matchesFilter(p, filter));
+  const loved = mostLoved.filter((p) => matchesFilter(p, filter));
+
+  const search = () => {
+    router.push({ pathname: '/browse', params: { q: query.trim() } });
+    setQuery('');
+  };
+  const pickRadius = () =>
+    Alert.alert('Search radius', 'Show pets within', [
+      ...radii.map((r) => ({ text: r, onPress: () => setRadius(r) })),
+      { text: 'Cancel', style: 'cancel' as const },
+    ]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 220 }} showsVerticalScrollIndicator={false}>
-        <FadeInUp delay={0} style={styles.location}>
-          <Icon source={require('../../../assets/figma/location-pin.svg')} />
-          <Text style={styles.city}>
-            Hamburg<Text style={styles.radius}> · 25 km</Text>
-          </Text>
-          <Icon source={require('../../../assets/figma/icon-chevron-down.svg')} size={16} />
+        <FadeInUp delay={0} style={styles.topRow}>
+          <Pressable style={styles.location} onPress={pickRadius} hitSlop={8}>
+            <Icon source={require('../../../assets/figma/location-pin.svg')} />
+            <Text style={styles.city}>
+              Hamburg<Text style={styles.radius}> · {radius}</Text>
+            </Text>
+            <Icon source={require('../../../assets/figma/icon-chevron-down.svg')} size={16} />
+          </Pressable>
+          <Pressable style={styles.bell} onPress={() => router.push('/inbox')} hitSlop={8}>
+            <Ionicons name="notifications-outline" size={22} color={colors.black} />
+            {unread > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{unread > 9 ? '9+' : unread}</Text>
+              </View>
+            )}
+          </Pressable>
         </FadeInUp>
 
         <FadeInUp delay={70} style={styles.search}>
@@ -37,8 +67,12 @@ export default function Home() {
             placeholder="Find your new friend"
             placeholderTextColor="rgba(0,0,0,0.3)"
             style={styles.searchInput}
+            value={query}
+            onChangeText={setQuery}
+            returnKeyType="search"
+            onSubmitEditing={search}
           />
-          <Pressable style={styles.filterButton}>
+          <Pressable style={styles.filterButton} onPress={() => router.push('/browse')}>
             <Icon source={require('../../../assets/figma/icon-filters.svg')} size={20} />
           </Pressable>
         </FadeInUp>
@@ -57,10 +91,14 @@ export default function Home() {
         </FadeInUp>
 
         <FadeInUp delay={210} style={styles.section}>
-          <SectionHeader title="Popular now" />
+          <SectionHeader title="Popular now" onSeeAll={() => router.push('/browse')} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {categories.map((c) => (
-              <Pressable key={c.label} style={styles.tile}>
+              <Pressable
+                key={c.label}
+                style={styles.tile}
+                onPress={() => router.push({ pathname: '/browse', params: { category: c.label } })}
+              >
                 <Image source={c.photo} style={styles.tilePhoto} contentFit="cover" />
                 <Text style={styles.tileLabel} numberOfLines={1}>
                   {c.label}
@@ -73,18 +111,20 @@ export default function Home() {
         <FadeInUp delay={280} style={styles.section}>
           <SectionHeader title="Perfect match for you" onSeeAll={() => router.push('/matches')} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-            {perfectMatches.map((pet) => (
+            {matches.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
+            {!matches.length && <Text style={styles.empty}>No {filter.toLowerCase()} in this list right now.</Text>}
           </ScrollView>
         </FadeInUp>
 
         <FadeInUp delay={350} style={styles.section}>
-          <SectionHeader title="Most loved this week" />
+          <SectionHeader title="Most loved this week" onSeeAll={() => router.push('/browse')} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-            {mostLoved.map((pet) => (
+            {loved.map((pet) => (
               <PetCard key={pet.id} pet={pet} onPress={() => openPet(pet)} />
             ))}
+            {!loved.length && <Text style={styles.empty}>No {filter.toLowerCase()} in this list right now.</Text>}
           </ScrollView>
         </FadeInUp>
 
@@ -128,7 +168,12 @@ export default function Home() {
               </View>
             ))}
           </ScrollView>
-          <Pressable style={styles.share}>
+          <Pressable
+            style={styles.share}
+            onPress={() =>
+              Alert.alert('Share your story', 'Adopted through 4 Paws? Story sharing is coming soon — we can’t wait to see your photos!')
+            }
+          >
             <Icon source={require('../../../assets/figma/icon-plus.svg')} size={16} />
             <Text style={styles.shareText}>Share your story</Text>
           </Pressable>
@@ -140,7 +185,37 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  location: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16, marginTop: 8 },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  location: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  bell: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.cream,
+  },
+  badgeText: { fontFamily: fonts.bold, fontSize: 9, color: colors.white },
   city: { fontFamily: fonts.semiBold, fontSize: 14, color: colors.black },
   radius: { fontFamily: fonts.regular, color: colors.greyMuted },
   search: {
@@ -246,5 +321,6 @@ const styles = StyleSheet.create({
   storyNames: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.black },
   storyMeta: { fontFamily: fonts.regular, fontSize: 11, color: colors.greyMuted },
   share: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 16 },
+  empty: { fontFamily: fonts.regular, fontSize: 14, color: colors.grey, paddingVertical: 24 },
   shareText: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.purple },
 });

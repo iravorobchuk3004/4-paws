@@ -52,7 +52,7 @@ export default function SavedAnimals() {
                   <>
                     <Tag label="Meeting requested" tone="purple" />
                     <View style={{ flex: 1 }} />
-                    <Text style={styles.link} onPress={() => router.push('/(tabs)/profile')}>
+                    <Text style={styles.link} onPress={() => router.push(`/applications/${pet.id}`)}>
                       View status
                     </Text>
                   </>

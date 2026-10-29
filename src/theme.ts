@@ -14,6 +14,7 @@ export const colors = {
   greyBg: '#EDEBEB',
   pink: '#FFB6D4',
   pinkTag: '#FFD7E8',
+  error: '#C0392B',
 };
 
 export const fonts = {

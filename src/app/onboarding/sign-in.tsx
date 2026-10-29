@@ -4,15 +4,44 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FormField, Icon, NavHeader, PageHeading, PrimaryButton } from '@/components/ui';
+import { isValidEmail, useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
+const nameFromEmail = (email: string) => {
+  const local = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+  return local.replace(/\b\w/g, (c) => c.toUpperCase()) || '4 Paws friend';
+};
+
 export default function SignIn() {
+  const { user, setUser } = useApp();
   const [hidden, setHidden] = useState(true);
+  const [email, setEmail] = useState(user?.email ?? '');
+  const [password, setPassword] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const emailError = submitted && !isValidEmail(email) && 'Please enter a valid email.';
+  const passwordError = submitted && password.length < 8 && 'Use at least 8 characters.';
+
+  const submit = () => {
+    setSubmitted(true);
+    if (!isValidEmail(email) || password.length < 8) return;
+    // Demo sign-in: there is no server yet, so any valid email and password is accepted.
+    const sameUser = user?.email.toLowerCase() === email.trim().toLowerCase();
+    setUser(sameUser && user ? user : { name: nameFromEmail(email), email: email.trim() });
+    router.dismissAll();
+    router.replace('/(tabs)');
+  };
+
+  const forgot = () => router.push({ pathname: '/onboarding/forgot-password', params: { email: email.trim() } });
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavHeader step="Step 3/3" />
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
+      <NavHeader />
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 24 }}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+      >
         <PageHeading
           title="Sign in to your account"
           subtitle="Your favourites and a new companion are waiting for you."
@@ -25,21 +54,31 @@ export default function SignIn() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            value={email}
+            onChangeText={setEmail}
+            error={emailError}
           />
           <FormField
             label="Password"
-            placeholder="Create a password"
+            placeholder="Your password"
             icon={require('../../../assets/figma/field-lock.svg')}
             hint="Use at least 8 characters."
             secureTextEntry={hidden}
             autoComplete="password"
+            value={password}
+            onChangeText={setPassword}
+            error={passwordError}
+            returnKeyType="done"
+            onSubmitEditing={submit}
             trailing={
               <Pressable onPress={() => setHidden((h) => !h)} hitSlop={8}>
                 <Icon source={require('../../../assets/figma/field-eye.svg')} />
               </Pressable>
             }
           />
-          <Text style={styles.forgot}>Forgot password?</Text>
+          <Pressable onPress={forgot} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
+            <Text style={styles.forgot}>Forgot password?</Text>
+          </Pressable>
         </View>
         <View style={styles.alt}>
           <Text style={styles.altText}>New to 4 Paws? </Text>
@@ -50,7 +89,7 @@ export default function SignIn() {
       </ScrollView>
 
       <View style={styles.bottom}>
-        <PrimaryButton title="Continue" onPress={() => router.replace('/(tabs)')} />
+        <PrimaryButton title="Continue" onPress={submit} />
       </View>
     </SafeAreaView>
   );

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Fragment } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeInUp } from '@/components/anim';
@@ -22,25 +22,52 @@ const card = {
 
 const settings = [
   {
+    title: 'My activity',
+    text: 'Meeting requests · found pets · donations',
+    icon: require('../../../assets/figma/heart-purple.svg'),
+    onPress: () => router.push('/activity'),
+  },
+  {
     title: 'Adoption preferences',
     text: 'Lifestyle & ideal companion',
     icon: require('../../../assets/figma/set-paw.svg'),
-    onPress: () => router.push('/onboarding/about-you'),
+    onPress: () => router.push({ pathname: '/onboarding/about-you', params: { edit: '1' } }),
   },
   {
     title: 'Notifications',
     text: 'Meeting updates · shelter news',
     icon: require('../../../assets/figma/set-bell.svg'),
+    onPress: () => router.push('/settings/notifications'),
   },
   {
     title: 'Help & privacy',
     text: 'Support · safety · account settings',
     icon: require('../../../assets/figma/set-shield.svg'),
+    onPress: () => router.push('/settings/help'),
   },
 ];
 
 export default function Profile() {
-  const { saved, applications } = useApp();
+  const { saved, applications, reports, user, setUser } = useApp();
+  const initials = (user?.name ?? '')
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const logOut = () =>
+    Alert.alert('Log out?', 'Your saved animals stay on this phone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Log out',
+        style: 'destructive',
+        onPress: () => {
+          setUser(null);
+          router.replace('/welcome');
+        },
+      },
+    ]);
   const meeting = applications.length ? getProfile(applications[applications.length - 1]) : null;
 
   return (
@@ -49,35 +76,56 @@ export default function Profile() {
         <FadeInUp delay={0} style={{ gap: 4 }}>
           <View style={styles.headerRow}>
             <Text style={styles.title}>Profile</Text>
-            <Pressable style={styles.logout} onPress={() => router.replace('/welcome')}>
-              <Icon source={require('../../../assets/figma/logout.svg')} size={20} />
-              <Text style={styles.logoutText}>Log out</Text>
-            </Pressable>
+            {user && (
+              <Pressable style={styles.logout} onPress={logOut} hitSlop={8}>
+                <Icon source={require('../../../assets/figma/logout.svg')} size={20} />
+                <Text style={styles.logoutText}>Log out</Text>
+              </Pressable>
+            )}
           </View>
           <Text style={styles.subtitle}>You & your next friend</Text>
         </FadeInUp>
 
         <FadeInUp delay={70} style={[card, styles.profile]}>
-          <Image source={require('../../../assets/figma/profile-avatar.png')} style={styles.avatar} />
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={styles.name}>Anna Kovalenko</Text>
-            <Text style={styles.email}>anna@example.com</Text>
-          </View>
-          <Pressable style={styles.edit}>
-            <Icon source={require('../../../assets/figma/edit.svg')} size={16} />
-            <Text style={styles.editText}>Edit</Text>
-          </Pressable>
+          {user ? (
+            <>
+              <View style={[styles.avatar, styles.initials]}>
+                <Text style={styles.initialsText}>{initials || '🐾'}</Text>
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={styles.name}>{user.name}</Text>
+                <Text style={styles.email}>{user.email}</Text>
+              </View>
+              <Pressable style={styles.edit} onPress={() => router.push('/settings/account')}>
+                <Icon source={require('../../../assets/figma/edit.svg')} size={16} />
+                <Text style={styles.editText}>Edit</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <View style={[styles.avatar, styles.initials]}>
+                <Text style={styles.initialsText}>🐾</Text>
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={styles.name}>Browsing as a guest</Text>
+                <Text style={styles.email}>Create an account to request meetings</Text>
+              </View>
+              <Pressable style={styles.edit} onPress={() => router.push('/onboarding/goal')}>
+                <Text style={styles.editText}>Join</Text>
+              </Pressable>
+            </>
+          )}
         </FadeInUp>
 
         <FadeInUp delay={140} style={styles.stats}>
           <Stat value={saved.length} label="Saved" />
           <Stat value={applications.length} label={applications.length === 1 ? 'Application' : 'Applications'} />
-          <Stat value={0} label="Adopted" />
+          <Stat value={reports.length} label={reports.length === 1 ? 'Pet helped' : 'Pets helped'} />
         </FadeInUp>
 
         {meeting && (
           <FadeInUp delay={210}>
-            <Pressable style={styles.meeting} onPress={() => router.push(`/pet/${meeting.id}`)}>
+            <Pressable style={styles.meeting} onPress={() => router.push(`/applications/${meeting.id}`)}>
               <Image source={meeting.thumb} style={styles.meetingPhoto} contentFit="cover" />
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={styles.meetingTitle}>Your meeting with {meeting.name}</Text>
@@ -132,6 +180,8 @@ const styles = StyleSheet.create({
   logoutText: { fontFamily: fonts.medium, fontSize: 14, color: colors.grey },
   profile: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   avatar: { width: 64, height: 64, borderRadius: 32 },
+  initials: { backgroundColor: colors.purpleSelected, alignItems: 'center', justifyContent: 'center' },
+  initialsText: { fontFamily: fonts.bold, fontSize: 22, color: colors.purple },
   name: { fontFamily: fonts.semiBold, fontSize: 16, color: colors.black },
   email: { fontFamily: fonts.regular, fontSize: 12, color: colors.grey },
   edit: {

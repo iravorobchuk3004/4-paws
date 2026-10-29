@@ -1,7 +1,6 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Celebration } from '@/components/Celebration';
@@ -12,7 +11,7 @@ import { colors, fonts } from '@/theme';
 
 export default function FoundThanks() {
   const { report } = useFoundReport();
-  const [caseId] = useState(() => `FP-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`);
+  const { id: caseId } = useLocalSearchParams<{ id: string }>();
 
   const time = report.when.split('·')[1]?.trim();
   const help = report.help.map((h, i) => (i === 0 ? h.split(' ')[0] : h.toLowerCase())).join(' + ');
@@ -58,7 +57,10 @@ export default function FoundThanks() {
       <View style={styles.bottom}>
         <PrimaryButton
           title="Add a case update"
-          onPress={() => Alert.alert('Case update', 'Case updates will be available once volunteers are connected.')}
+          onPress={() => {
+            router.dismissTo('/(tabs)');
+            router.push(`/reports/${caseId}`);
+          }}
         />
         <SecondaryButton title="Back to Home" onPress={() => router.dismissTo('/(tabs)')} />
       </View>

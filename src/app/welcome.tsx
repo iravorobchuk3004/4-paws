@@ -4,9 +4,16 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Icon, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 export default function Welcome() {
+  const { setGoal } = useApp();
+  const start = (goal: 'adopt' | 'help') => {
+    setGoal(goal);
+    router.push('/onboarding/goal');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -40,13 +47,13 @@ export default function Welcome() {
             label="Search pets"
             icon={require('../../assets/figma/search-white.svg')}
             iconSize={24}
-            onPress={() => router.push('/(tabs)')}
+            onPress={() => router.push('/browse')}
           />
           <QuickAction
             label="Support pets"
             icon={require('../../assets/figma/heart-white.svg')}
             iconSize={18}
-            onPress={() => router.push('/onboarding/goal')}
+            onPress={() => start('help')}
           />
         </View>
       </View>
@@ -55,9 +62,15 @@ export default function Welcome() {
         <PrimaryButton
           title="Get started"
           icon={require('../../assets/figma/arrow-right-white.svg')}
-          onPress={() => router.push('/onboarding/goal')}
+          onPress={() => start('adopt')}
         />
-        <SecondaryButton title="Explore pets" onPress={() => router.push('/(tabs)')} />
+        <SecondaryButton title="Explore as a guest" onPress={() => router.push('/(tabs)')} />
+        <View style={styles.signIn}>
+          <Text style={styles.signInText}>Already have an account? </Text>
+          <Pressable onPress={() => router.push('/onboarding/sign-in')} hitSlop={8}>
+            <Text style={[styles.signInText, styles.signInLink]}>Sign in</Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -86,7 +99,7 @@ function QuickAction({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  content: { flex: 1, paddingHorizontal: 16, paddingVertical: 24, gap: 24, alignItems: 'center' },
+  content: { flex: 1, paddingHorizontal: 16, paddingVertical: 16, gap: 20, alignItems: 'center' },
   hero: { height: 220, alignSelf: 'stretch', borderRadius: 24, overflow: 'hidden', padding: 20 },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   badge: {
@@ -141,4 +154,7 @@ const styles = StyleSheet.create({
   },
   actionText: { fontFamily: fonts.bold, fontSize: 15, color: colors.black },
   bottom: { paddingHorizontal: 20, gap: 8, paddingBottom: 8 },
+  signIn: { flexDirection: 'row', justifyContent: 'center', paddingTop: 4 },
+  signInText: { fontFamily: fonts.regular, fontSize: 14, color: colors.black },
+  signInLink: { fontFamily: fonts.semiBold, color: colors.purple, textDecorationLine: 'underline' },
 });

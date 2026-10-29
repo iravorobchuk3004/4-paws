@@ -4,9 +4,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Icon, NavHeader, PrimaryButton } from '@/components/ui';
+import { Goal, useApp } from '@/store';
 import { colors, fonts, shadow } from '@/theme';
 
-const goals = [
+const goals: { id: Goal; title: string; text?: string; icon: number; cta: string }[] = [
   {
     id: 'adopt',
     title: 'I want to adopt',
@@ -36,8 +37,9 @@ const goals = [
   },
 ];
 
-export default function Goal() {
-  const [selected, setSelected] = useState('adopt');
+export default function GoalStep() {
+  const { goal, setGoal } = useApp();
+  const [selected, setSelected] = useState<Goal>(goal);
   const cta = goals.find((g) => g.id === selected)!.cta;
 
   return (
@@ -73,7 +75,13 @@ export default function Goal() {
       </View>
 
       <View style={styles.bottom}>
-        <PrimaryButton title={cta} onPress={() => router.push('/onboarding/create-account')} />
+        <PrimaryButton
+          title={cta}
+          onPress={() => {
+            setGoal(selected);
+            router.push('/onboarding/create-account');
+          }}
+        />
       </View>
     </SafeAreaView>
   );

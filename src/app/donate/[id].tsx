@@ -82,7 +82,7 @@ export default function Donate() {
                 style={styles.inputText}
               />
             </View>
-            <Text style={[styles.hint, !valid && { color: '#C0392B' }]}>Minimum {euro(MIN)}</Text>
+            <Text style={[styles.hint, !valid && { color: colors.error }]}>Minimum {euro(MIN)}</Text>
           </View>
         </View>
 

@@ -1,10 +1,10 @@
 import { Image } from 'expo-image';
-import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { LikePop, PressableScale } from '@/components/anim';
 import { Icon } from '@/components/ui';
 import { Pet } from '@/data/pets';
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 const sexIcons = {
@@ -13,7 +13,8 @@ const sexIcons = {
 };
 
 export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
-  const [liked, setLiked] = useState(false);
+  const { saved, toggleSaved } = useApp();
+  const liked = saved.includes(pet.id);
   const small = pet.tag.toLowerCase().includes('match');
 
   return (
@@ -22,7 +23,7 @@ export function PetCard({ pet, onPress }: { pet: Pet; onPress?: () => void }) {
         <Image source={pet.photo} style={StyleSheet.absoluteFill} contentFit="cover" />
         <Pressable
           style={[styles.like, { backgroundColor: pet.tagColor ?? colors.pinkTag }]}
-          onPress={() => setLiked((l) => !l)}
+          onPress={() => toggleSaved(pet.id)}
           hitSlop={8}
         >
           <LikePop active={liked}>

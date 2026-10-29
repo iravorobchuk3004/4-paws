@@ -1,5 +1,7 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 
+import { useApp } from '@/store';
+
 // Draft of a "found pet" report, shared by the three form steps and the confirmation.
 export type FoundReport = {
   photos: string[];
@@ -15,6 +17,7 @@ export type FoundReport = {
   situation: string;
   name: string;
   phone: string;
+  submitted?: boolean;
 };
 
 const now = new Date();
@@ -44,7 +47,8 @@ export function useFoundReport() {
 }
 
 export function FoundReportProvider({ children }: { children: ReactNode }) {
-  const [report, setReport] = useState(initial);
+  const { user } = useApp();
+  const [report, setReport] = useState({ ...initial, name: user?.name ?? '', phone: user?.phone ?? '' });
   const update = (patch: Partial<FoundReport>) => setReport((r) => ({ ...r, ...patch }));
   return <FoundContext.Provider value={{ report, update }}>{children}</FoundContext.Provider>;
 }

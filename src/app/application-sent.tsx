@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,6 +30,7 @@ const steps = [
 ];
 
 export default function ApplicationSent() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ marginTop: 24 }}>
@@ -57,8 +58,8 @@ export default function ApplicationSent() {
       </View>
 
       <View style={styles.bottom}>
-        <PrimaryButton title="View saved animals" onPress={() => router.replace('/(tabs)/my-pets')} />
-        <SecondaryButton title="Back to home" onPress={() => router.replace('/(tabs)')} />
+        <PrimaryButton title="Track my application" onPress={() => router.replace(`/applications/${id}`)} />
+        <SecondaryButton title="Back to home" onPress={() => router.dismissTo('/(tabs)')} />
       </View>
     </SafeAreaView>
   );

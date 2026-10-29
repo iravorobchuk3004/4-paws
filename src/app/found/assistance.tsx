@@ -5,13 +5,29 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChoiceField, PageTitle, TextArea } from '@/components/form';
 import { FormField, NavHeader, PrimaryButton } from '@/components/ui';
 import { useFoundReport } from '@/components/FoundReport';
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 const user = require('../../../assets/figma/field-user.svg');
 
 export default function FoundAssistance() {
   const { report, update } = useFoundReport();
-  const valid = report.help.length > 0 && report.name.trim() && report.phone.trim();
+  const { addReport } = useApp();
+  const { name, phone } = report;
+  const valid = report.help.length > 0 && name.trim() && phone.trim();
+
+  const submit = () => {
+    const id = `FP-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    addReport({
+      id,
+      animal: report.animal,
+      location: report.location.trim(),
+      photo: report.photos[0],
+      help: report.help,
+    });
+    update({ submitted: true });
+    router.replace({ pathname: '/found/thanks', params: { id } });
+  };
 
   const toggleHelp = (option: string) =>
     update({
@@ -62,7 +78,7 @@ export default function FoundAssistance() {
             placeholder="Anna Kovalenko"
             icon={user}
             autoComplete="name"
-            value={report.name}
+            value={name}
             onChangeText={(name) => update({ name })}
           />
           <FormField
@@ -71,7 +87,7 @@ export default function FoundAssistance() {
             icon={user}
             keyboardType="phone-pad"
             autoComplete="tel"
-            value={report.phone}
+            value={phone}
             onChangeText={(phone) => update({ phone })}
           />
         </View>
@@ -80,7 +96,7 @@ export default function FoundAssistance() {
       <View style={styles.bottom}>
         <PrimaryButton
           title="Submit assistance request"
-          onPress={valid ? () => router.replace('/found/thanks') : undefined}
+          onPress={valid ? submit : undefined}
           style={!valid && { opacity: 0.5 }}
         />
       </View>

@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Tag } from '@/components/PetRow';
@@ -104,7 +104,14 @@ export default function PetDetails() {
           <Text style={styles.about}>{pet.about}</Text>
         </Section>
 
-        <View style={[card, styles.shelter]}>
+        <Pressable
+          style={[card, styles.shelter]}
+          onPress={() =>
+            Linking.openURL(
+              `https://maps.google.com/?q=${encodeURIComponent(`${pet.shelter} animal shelter ${pet.shelterMeta.split(' · ')[0]}`)}`,
+            )
+          }
+        >
           <View style={styles.shelterIcon}>
             <Icon source={require('../../../assets/figma/shelter-home.svg')} />
           </View>
@@ -113,13 +120,13 @@ export default function PetDetails() {
             <Text style={styles.shelterMeta}>{pet.shelterMeta}</Text>
           </View>
           <Icon source={require('../../../assets/figma/chevron-right.svg')} size={20} />
-        </View>
+        </Pressable>
       </ScrollView>
 
       <View style={styles.bottom}>
         <PrimaryButton
-          title={applied ? 'Meeting requested' : 'Apply for a meeting'}
-          onPress={() => (applied ? router.push('/(tabs)/my-pets') : router.push(`/meeting/${pet.id}`))}
+          title={applied ? 'View application status' : 'Apply for a meeting'}
+          onPress={() => router.push(applied ? `/applications/${pet.id}` : `/meeting/${pet.id}`)}
         />
       </View>
     </SafeAreaView>

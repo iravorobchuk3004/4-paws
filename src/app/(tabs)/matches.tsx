@@ -18,6 +18,7 @@ export default function Matches() {
   const sorted = [...dogs].sort((a, b) => {
     if (sort === 'Nearest') return parseFloat(a.distance) - parseFloat(b.distance);
     if (sort === 'Age') return parseFloat(a.age) - parseFloat(b.age);
+    if (sort === 'Newest') return a.addedDaysAgo - b.addedDaysAgo;
     return b.match - a.match;
   });
   const strong = sorted.filter((p) => p.match >= 88);

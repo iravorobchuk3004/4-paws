@@ -1,9 +1,10 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Chip, Icon, NavHeader, PageHeading, PrimaryButton } from '@/components/ui';
+import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 type Question = {
@@ -49,13 +50,19 @@ const questions: Question[] = [
 ];
 
 export default function AboutYou() {
-  const [answers, setAnswers] = useState<Record<string, string[]>>({
-    children: ['No'],
-    home: ['Apartment'],
-    pets: ['Cat'],
-    activity: ['Calm'],
-    time: ['1–3 hours'],
-  });
+  // Opened from Profile to edit answers, or as the last onboarding step.
+  const { edit } = useLocalSearchParams<{ edit?: string }>();
+  const { preferences, setPreferences } = useApp();
+  const [answers, setAnswers] = useState(preferences);
+
+  const save = () => {
+    setPreferences(answers);
+    if (edit) {
+      router.back();
+    } else {
+      router.push('/onboarding/ready');
+    }
+  };
 
   const toggle = (q: Question, option: string) => {
     setAnswers((prev) => {
@@ -72,7 +79,7 @@ export default function AboutYou() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavHeader step="Step 3/3" />
+      <NavHeader step={edit ? 'Preferences' : 'Step 3/3'} />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         <PageHeading
           title="A little about you"
@@ -104,7 +111,7 @@ export default function AboutYou() {
       </ScrollView>
 
       <View style={styles.bottom}>
-        <PrimaryButton title="Show my matches" onPress={() => router.replace('/matches')} />
+        <PrimaryButton title={edit ? 'Save preferences' : 'Show my matches'} onPress={save} />
       </View>
     </SafeAreaView>
   );

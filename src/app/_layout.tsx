@@ -29,7 +29,9 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }}>
         <Stack.Screen name="index" options={{ animation: 'fade' }} />
-        <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
+        <Stack.Screen name="intro" options={{ animation: 'fade', gestureEnabled: false }} />
+        <Stack.Screen name="welcome" options={{ animation: 'fade', gestureEnabled: false }} />
+        <Stack.Screen name="onboarding/ready" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="(tabs)" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="application-sent" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="donation-thanks" options={{ animation: 'fade', gestureEnabled: false }} />
