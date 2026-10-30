@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Animated,
   Easing,
@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { WigglingMascot } from '@/components/Celebration';
 import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
@@ -28,27 +29,27 @@ const slides = [
   {
     title: 'Find a friend who fits your life',
     text: 'Tell us about your routine and we’ll match you with pets who’ll love it.',
-    mascot: require('../../assets/mascots/dog.png'),
+    mascot: 'dog' as const,
     photos: [require('../../assets/pets/maxi.jpg'), require('../../assets/pets/luna.jpg')],
     color: colors.lime,
   },
   {
     title: 'Help without adopting',
     text: 'Feed a named pet’s care fund and watch them get better.',
-    mascot: require('../../assets/mascots/cat.png'),
+    mascot: 'cat' as const,
     photos: [require('../../assets/pets/milo.jpg'), require('../../assets/pets/ginger.jpg')],
     color: colors.pink,
   },
   {
     title: 'Found a pet? We’ve got you',
     text: 'A photo and a pin on the map. Nearby shelters take it from there.',
-    mascot: require('../../assets/mascots/rabbit.png'),
+    mascot: 'rabbit' as const,
     photos: [require('../../assets/pets/snowball.jpg'), require('../../assets/pets/kiwi.jpg')],
     color: colors.yellow,
   },
 ];
 
-// First-launch walkthrough: the mascots on splash colours, and a "give a paw" hold to begin.
+// First-launch walkthrough: the wiggling mascots on splash colours, and a "give a paw" hold to begin.
 export default function Intro() {
   const { finishIntro } = useApp();
   const { width } = useWindowDimensions();
@@ -56,19 +57,7 @@ export default function Intro() {
   const [scroller, setScroller] = useState<ScrollViewInstance | null>(null);
   const [page, setPage] = useState(0);
   const [scrollX] = useState(() => new Animated.Value(0));
-  const [bob] = useState(() => new Animated.Value(0));
   const last = page === slides.length - 1;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bob, { toValue: 1, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(bob, { toValue: 0, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [bob]);
 
   const done = () => {
     finishIntro();
@@ -135,22 +124,10 @@ export default function Intro() {
                 <Animated.View style={[styles.photo, styles.photoRight, { transform: [{ translateX: parallax(-30) }, { rotate: '8deg' }] }]}>
                   <Image source={slide.photos[1]} style={styles.fill} contentFit="cover" />
                 </Animated.View>
-                <Animated.View
-                  style={{
-                    transform: [
-                      { translateX: parallax(width * 0.5) },
-                      { translateY: bob.interpolate({ inputRange: [0, 1], outputRange: [0, -14] }) },
-                    ],
-                  }}
-                >
-                  <Image source={slide.mascot} style={styles.mascot} contentFit="contain" />
+                <Animated.View style={{ alignItems: 'center', transform: [{ translateX: parallax(width * 0.5) }] }}>
+                  <WigglingMascot animal={slide.mascot} width={230} height={230} />
+                  <View style={styles.shadow} />
                 </Animated.View>
-                <Animated.View
-                  style={[
-                    styles.shadow,
-                    { transform: [{ scaleX: bob.interpolate({ inputRange: [0, 1], outputRange: [1, 0.8] }) }] },
-                  ]}
-                />
               </View>
               <Animated.View
                 style={[
@@ -283,7 +260,6 @@ const styles = StyleSheet.create({
   },
   photoLeft: { left: 22, top: '12%' },
   photoRight: { right: 24, bottom: '10%' },
-  mascot: { width: 230, height: 230 },
   shadow: { width: 120, height: 14, borderRadius: 7, backgroundColor: 'rgba(27,27,27,0.08)', marginTop: 4 },
   copy: { height: TEXT_H, paddingHorizontal: 28, paddingTop: 28, gap: 8 },
   title: { fontFamily: fonts.extraBold, fontSize: 26, lineHeight: 32, color: colors.black, textAlign: 'center' },

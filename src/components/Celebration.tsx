@@ -142,96 +142,135 @@ const styles = StyleSheet.create({
   piece: { position: 'absolute', left: 166, top: 100 },
 });
 
-// Watercolour mascots from the Figma "maskots" frame (all face right). No bird mascot yet, so birds use the rabbit.
-const MASCOT: Record<Critter, number> = {
-  dog: require('../../assets/mascots/dog.png'),
-  cat: require('../../assets/mascots/cat.png'),
-  rabbit: require('../../assets/mascots/rabbit.png'),
-  bird: require('../../assets/mascots/rabbit.png'),
+type Part = 'tail' | 'front' | 'front2' | 'back' | 'ear';
+type Mascot = { size: [number, number]; body: number; parts: { part: Part; image: number; pivot: [number, number] }[] };
+
+// Watercolour mascots from the Figma "maskots" frame (all face right), cut into layers so the
+// tail, paws and ears can move on their own. Pivots are the joints, in source-image pixels.
+// No bird mascot yet, so birds use the rabbit.
+const DOG: Mascot = {
+  size: [480, 600],
+  body: require('../../assets/mascots/dog/body.png'),
+  parts: [
+    { part: 'tail', image: require('../../assets/mascots/dog/tail.png'), pivot: [148, 338] },
+    { part: 'back', image: require('../../assets/mascots/dog/back.png'), pivot: [112, 395] },
+    { part: 'front', image: require('../../assets/mascots/dog/front.png'), pivot: [355, 365] },
+  ],
+};
+const CAT: Mascot = {
+  size: [450, 600],
+  body: require('../../assets/mascots/cat/body.png'),
+  parts: [
+    { part: 'tail', image: require('../../assets/mascots/cat/tail.png'), pivot: [168, 290] },
+    { part: 'back', image: require('../../assets/mascots/cat/back.png'), pivot: [100, 355] },
+    { part: 'front', image: require('../../assets/mascots/cat/front.png'), pivot: [358, 335] },
+    { part: 'front2', image: require('../../assets/mascots/cat/front2.png'), pivot: [305, 375] },
+  ],
+};
+const RABBIT: Mascot = {
+  size: [400, 600],
+  body: require('../../assets/mascots/rabbit/body.png'),
+  parts: [
+    { part: 'ear', image: require('../../assets/mascots/rabbit/ear.png'), pivot: [226, 200] },
+    { part: 'tail', image: require('../../assets/mascots/rabbit/tail.png'), pivot: [150, 300] },
+    { part: 'back', image: require('../../assets/mascots/rabbit/back.png'), pivot: [105, 375] },
+    { part: 'front', image: require('../../assets/mascots/rabbit/front.png'), pivot: [305, 345] },
+  ],
+};
+const MASCOT: Record<Critter, Mascot> = { dog: DOG, cat: CAT, rabbit: RABBIT, bird: RABBIT };
+
+// One 1.6 s beat drives every part: a quick tail wag, paws paddling in turn, a floppy ear.
+const SWING: Record<Part, { input: number[]; deg: number[] }> = {
+  tail: { input: [0, 0.08, 0.16, 0.24, 0.32, 0.4, 1], deg: [0, 14, -10, 14, -10, 0, 0] },
+  front: { input: [0, 0.25, 0.5, 0.75, 1], deg: [0, -9, 0, 6, 0] },
+  front2: { input: [0, 0.25, 0.5, 0.75, 1], deg: [0, 6, 0, -8, 0] },
+  back: { input: [0, 0.25, 0.5, 0.75, 1], deg: [0, 7, 0, -7, 0] },
+  ear: { input: [0, 0.3, 0.55, 1], deg: [0, -7, 2, 0] },
 };
 
-const loopOf = (...steps: Animated.CompositeAnimation[]) => Animated.loop(Animated.sequence(steps));
-const to = (v: Animated.Value, toValue: number, duration: number, easing = Easing.inOut(Easing.quad)) =>
-  Animated.timing(v, { toValue, duration, easing, useNativeDriver: true });
-
-// The star of the celebration:
-// dog runs back and forth, hopping and wagging; cat leaps with a flip; rabbit hops; bird flutters.
-function HappyPet({ animal }: { animal: Critter }) {
+// Happy mascot that stays in place: wags its tail, paddles its paws and breathes a little.
+export function WigglingMascot({ animal, width = 120, height = 150 }: { animal: Critter; width?: number; height?: number }) {
+  const mascot = MASCOT[animal];
   const [pop] = useState(() => new Animated.Value(0));
-  const [x] = useState(() => new Animated.Value(0));
-  const [face] = useState(() => new Animated.Value(1));
-  const [y] = useState(() => new Animated.Value(0));
-  const [wag] = useState(() => new Animated.Value(0));
-  const [squash] = useState(() => new Animated.Value(1));
-  const [flip] = useState(() => new Animated.Value(0));
+  const [beat] = useState(() => new Animated.Value(0));
+  const [breath] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
-    Animated.spring(pop, { toValue: 1, friction: 4, tension: 120, useNativeDriver: true }).start();
-    const loops: Animated.CompositeAnimation[] = [];
-
-    if (animal === 'dog') {
-      // Run right, turn, run left, turn.
-      loops.push(
-        loopOf(
-          to(face, 1, 0),
-          to(x, 70, 1100),
-          to(face, -1, 0),
-          to(x, -70, 1400),
-          to(face, 1, 0),
-          to(x, 0, 700),
-          Animated.delay(250),
-        ),
-        loopOf(to(y, -16, 160, Easing.out(Easing.quad)), to(y, 0, 160, Easing.in(Easing.quad))),
-        loopOf(to(wag, 1, 130), to(wag, -1, 130)),
-      );
-    } else if (animal === 'cat') {
-      loops.push(
-        loopOf(
-          to(squash, 0.8, 220),
-          Animated.parallel([to(squash, 1.1, 180), to(y, -80, 380, Easing.out(Easing.quad)), to(flip, 1, 600)]),
-          Animated.parallel([to(squash, 1, 200), to(y, 0, 320, Easing.in(Easing.quad))]),
-          to(squash, 0.85, 90),
-          to(squash, 1, 160),
-          to(flip, 0, 0),
-          Animated.delay(500),
-        ),
-        loopOf(to(wag, 0.4, 600), to(wag, -0.4, 600)),
-      );
-    } else if (animal === 'rabbit') {
-      loops.push(
-        loopOf(
-          to(squash, 0.85, 120),
-          Animated.parallel([to(squash, 1.05, 120), to(y, -40, 260, Easing.out(Easing.quad))]),
-          Animated.parallel([to(squash, 1, 120), to(y, 0, 240, Easing.in(Easing.quad))]),
-          Animated.delay(120),
-        ),
-        loopOf(to(x, 30, 900), to(x, -30, 1800), to(x, 0, 900)),
-      );
-    } else {
-      loops.push(loopOf(to(y, -24, 500), to(y, 0, 500)), loopOf(to(wag, 1, 140), to(wag, -1, 140)));
-    }
+    Animated.spring(pop, { toValue: 1, friction: 6, tension: 90, useNativeDriver: true }).start();
+    const loops = [
+      Animated.loop(Animated.timing(beat, { toValue: 1, duration: 1600, easing: Easing.linear, useNativeDriver: true })),
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(breath, { toValue: 1, duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(breath, { toValue: 0, duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]),
+      ),
+    ];
     loops.forEach((l) => l.start());
     return () => loops.forEach((l) => l.stop());
-  }, [animal, face, flip, pop, squash, wag, x, y]);
+  }, [beat, breath, pop]);
 
+  // Fit the source aspect ratio inside the box, so layer pivots (in %) line up with the art.
+  const [w, h] = mascot.size;
+  const scale = Math.min(width / w, height / h);
+  const box = { width: w * scale, height: h * scale };
+  const layer = { position: 'absolute' as const, top: 0, left: 0, ...box };
+
+  return (
+    <View style={{ width, height, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View
+        style={[
+          box,
+          {
+            transformOrigin: 'bottom',
+            transform: [{ scale: pop }, { scaleY: breath.interpolate({ inputRange: [0, 1], outputRange: [1, 1.02] }) }],
+          },
+        ]}
+      >
+        {mascot.parts
+          .filter((p) => p.part === 'back' || p.part === 'tail')
+          .map((p) => (
+            <MascotPart key={p.part} {...p} beat={beat} size={mascot.size} style={layer} />
+          ))}
+        <Image source={mascot.body} style={layer} contentFit="contain" />
+        {mascot.parts
+          .filter((p) => p.part !== 'back' && p.part !== 'tail')
+          .map((p) => (
+            <MascotPart key={p.part} {...p} beat={beat} size={mascot.size} style={layer} />
+          ))}
+      </Animated.View>
+    </View>
+  );
+}
+
+function MascotPart({
+  part,
+  image,
+  pivot,
+  size,
+  beat,
+  style,
+}: Mascot['parts'][number] & { size: [number, number]; beat: Animated.Value; style: object }) {
+  const swing = SWING[part];
   return (
     <Animated.View
       style={[
-        styles.pet,
+        style,
         {
-          transform: [
-            { translateX: x },
-            { translateY: y },
-            { scale: pop },
-            { scaleX: face },
-            { scaleY: squash },
-            { rotate: flip.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-360deg'] }) },
-            { rotate: wag.interpolate({ inputRange: [-1, 1], outputRange: ['-6deg', '6deg'] }) },
-          ],
+          transformOrigin: `${(pivot[0] / size[0]) * 100}% ${(pivot[1] / size[1]) * 100}%`,
+          transform: [{ rotate: beat.interpolate({ inputRange: swing.input, outputRange: swing.deg.map((d) => `${d}deg`) }) }],
         },
       ]}
     >
-      <Image source={MASCOT[animal]} style={styles.mascot} contentFit="contain" />
+      <Image source={image} style={{ width: '100%', height: '100%' }} contentFit="contain" />
     </Animated.View>
+  );
+}
+
+function HappyPet({ animal }: { animal: Critter }) {
+  return (
+    <View style={styles.pet}>
+      <WigglingMascot animal={animal} />
+    </View>
   );
 }
