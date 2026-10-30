@@ -1,20 +1,21 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Celebration, critterFor } from '@/components/Celebration';
 import { Progress } from '@/components/Progress';
-import { NavHeader, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { PrimaryButton, SecondaryButton } from '@/components/ui';
 import { getProfile } from '@/data/profiles';
 import { BONES_PER_MEAL, bonesToNextMeal, mealsFrom } from '@/lib/treats';
 import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
-const FIELD_HEIGHT = 320;
-const GROUND = 56;
+const GROUND = 72;
 const PLAYER = 64;
 const PLAYER_X = 28;
 const GRAVITY = 2600;
@@ -26,13 +27,14 @@ type Kind = keyof typeof SIZE;
 type Item = { kind: Kind; x: number; y: number; alive: boolean };
 type Phase = 'ready' | 'playing' | 'over';
 
-// Endless runner: the pet runs, you tap to jump over bath tubs and catch bones.
+// Full-screen endless runner: tap anywhere to jump over bath tubs and catch bones.
 export default function TreatRun() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const pet = getProfile(id);
   const { treats, bestRun, addTreats } = useApp();
-  const { width: screen } = useWindowDimensions();
-  const width = screen - 32;
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const floor = GROUND + insets.bottom;
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [score, setScore] = useState(0);
@@ -108,7 +110,7 @@ export default function TreatRun() {
         const free = g.items.findIndex((it) => !it.alive);
         if (free >= 0) {
           const kind: Kind = Math.random() < 0.38 ? 'bath' : 'bone';
-          g.items[free] = { kind, x: width + 20, y: kind === 'bath' ? 0 : 20 + Math.random() * 150, alive: true };
+          g.items[free] = { kind, x: width + 20, y: kind === 'bath' ? 0 : 20 + Math.random() * 210, alive: true };
           slots[free].opacity.setValue(1);
           setKinds((k) => (k[free] === kind ? k : k.map((v, i) => (i === free ? kind : v))));
         }
@@ -148,70 +150,74 @@ export default function TreatRun() {
   const meals = mealsFrom(total);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <NavHeader step="Treat Run" />
-      <View style={styles.body}>
-        <View style={styles.hud}>
+    <View style={styles.container}>
+      <StatusBar hidden />
+      <Pressable onPressIn={jump} style={StyleSheet.absoluteFill} accessibilityLabel="Jump">
+        <Text style={[styles.cloud, { left: 30, top: insets.top + 110 }]}>☁️</Text>
+        <Text style={[styles.cloud, { right: 50, top: insets.top + 190 }]}>☁️</Text>
+        <Text style={[styles.cloud, { left: width * 0.45, top: insets.top + 290, fontSize: 22 }]}>☁️</Text>
+
+        {slots.map((s, i) => (
+          <Animated.Text
+            key={i}
+            style={[
+              styles.item,
+              { bottom: floor, fontSize: SIZE[kinds[i]] - 4, opacity: s.opacity, transform: s.pos.getTranslateTransform() },
+            ]}
+          >
+            {kinds[i] === 'bath' ? '🛁' : '🦴'}
+          </Animated.Text>
+        ))}
+
+        <Animated.View
+          style={[
+            styles.player,
+            {
+              bottom: floor,
+              transform: [
+                { translateY: playerY },
+                { rotate: spin.interpolate({ inputRange: [0, 2], outputRange: ['0deg', '-720deg'] }) },
+              ],
+            },
+          ]}
+        >
+          <Image source={pet.thumb} style={styles.fill} contentFit="cover" />
+        </Animated.View>
+
+        <View style={[styles.ground, { height: floor }]}>
+          <Animated.View style={[styles.dashes, { transform: [{ translateX: groundX }] }]}>
+            {Array.from({ length: Math.ceil(width / 48) + 2 }, (_, i) => (
+              <View key={i} style={styles.dash} />
+            ))}
+          </Animated.View>
+        </View>
+
+        {phase === 'ready' && (
+          <View style={styles.overlay}>
+            <Text style={styles.overlayTitle}>Run with {pet.name}!</Text>
+            <Text style={styles.overlayText}>Tap anywhere to jump · tap twice for a double jump</Text>
+            <Text style={styles.overlayText}>Catch 🦴 · dodge the bath 🛁</Text>
+            <Text style={styles.tapHint}>Tap to start</Text>
+          </View>
+        )}
+      </Pressable>
+
+      {/* HUD sits above the tap area; only the back button takes touches. */}
+      <View style={[styles.hud, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <Pressable style={styles.back} onPress={() => router.back()} hitSlop={10} accessibilityLabel="Back">
+          <Ionicons name="chevron-back" size={22} color={colors.black} />
+        </Pressable>
+        <View style={styles.scoreWrap} pointerEvents="none">
           <Text style={styles.score}>🦴 {score}</Text>
           <Text style={styles.best}>Best {Math.max(bestRun, phase === 'over' ? 0 : score)}</Text>
         </View>
-
-        <Pressable onPressIn={jump} style={[styles.field, { width }]}>
-          <Text style={[styles.cloud, { left: 30, top: 30 }]}>☁️</Text>
-          <Text style={[styles.cloud, { right: 40, top: 70 }]}>☁️</Text>
-
-          {slots.map((s, i) => (
-            <Animated.Text
-              key={i}
-              style={[
-                styles.item,
-                { fontSize: SIZE[kinds[i]] - 4, opacity: s.opacity, transform: s.pos.getTranslateTransform() },
-              ]}
-            >
-              {kinds[i] === 'bath' ? '🛁' : '🦴'}
-            </Animated.Text>
-          ))}
-
-          <Animated.View
-            style={[
-              styles.player,
-              {
-                transform: [
-                  { translateY: playerY },
-                  { rotate: spin.interpolate({ inputRange: [0, 2], outputRange: ['0deg', '-720deg'] }) },
-                ],
-              },
-            ]}
-          >
-            <Image source={pet.thumb} style={StyleSheet.absoluteFill} contentFit="cover" />
-          </Animated.View>
-
-          <View style={styles.ground}>
-            <Animated.View style={[styles.dashes, { transform: [{ translateX: groundX }] }]}>
-              {Array.from({ length: Math.ceil(width / 48) + 2 }, (_, i) => (
-                <View key={i} style={styles.dash} />
-              ))}
-            </Animated.View>
-          </View>
-
-          {phase === 'ready' && (
-            <View style={styles.overlay}>
-              <Text style={styles.overlayTitle}>Run with {pet.name}!</Text>
-              <Text style={styles.overlayText}>Tap to jump · tap twice for a double jump</Text>
-              <Text style={styles.overlayText}>Catch 🦴 · dodge the bath 🛁</Text>
-              <Text style={styles.tapHint}>Tap to start</Text>
-            </View>
-          )}
-        </Pressable>
-
-        <View style={styles.jar}>
-          <View style={styles.jarRow}>
-            <Text style={styles.jarTitle}>🍲 Meals unlocked: {meals}</Text>
-            <Text style={styles.jarMeta}>{bonesToNextMeal(total)} 🦴 to the next</Text>
-          </View>
-          <Progress value={(total % BONES_PER_MEAL) / BONES_PER_MEAL} />
-          <Text style={styles.jarText}>Every {BONES_PER_MEAL} bones = one real meal for a shelter pet.</Text>
+        <View style={styles.meals} pointerEvents="none">
+          <Text style={styles.mealsText}>🍲 {meals}</Text>
         </View>
+      </View>
+      <View style={[styles.jar, { top: insets.top + 64 }]} pointerEvents="none">
+        <Progress value={(total % BONES_PER_MEAL) / BONES_PER_MEAL} />
+        <Text style={styles.jarMeta}>{bonesToNextMeal(total)} 🦴 to the next real meal</Text>
       </View>
 
       {phase === 'over' && (
@@ -221,34 +227,41 @@ export default function TreatRun() {
           <Text style={styles.resultText}>
             {score >= bestRun && score > 0 ? 'New best run 🎉' : `Best run: ${bestRun}`}
           </Text>
+          <Text style={styles.resultMeta}>Every {BONES_PER_MEAL} bones = one real meal for a shelter pet.</Text>
           <View style={styles.resultButtons}>
             <PrimaryButton title="Play again" onPress={start} />
             <SecondaryButton title="Done" onPress={() => router.back()} />
           </View>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream },
-  body: { flex: 1, paddingHorizontal: 16, gap: 16, paddingTop: 8 },
-  hud: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  score: { fontFamily: fonts.extraBold, fontSize: 28, color: colors.black },
-  best: { fontFamily: fonts.medium, fontSize: 14, color: colors.grey },
-  field: {
-    height: FIELD_HEIGHT,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: colors.purpleTint,
+  container: { flex: 1, backgroundColor: colors.purpleTint },
+  fill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  hud: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  back: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  cloud: { position: 'absolute', fontSize: 28, opacity: 0.8 },
-  item: { position: 'absolute', left: 0, bottom: GROUND },
+  scoreWrap: { flex: 1, alignItems: 'center' },
+  score: { fontFamily: fonts.extraBold, fontSize: 28, lineHeight: 34, color: colors.black },
+  best: { fontFamily: fonts.medium, fontSize: 12, color: colors.grey },
+  meals: { minWidth: 44, height: 44, paddingHorizontal: 12, borderRadius: 22, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  mealsText: { fontFamily: fonts.bold, fontSize: 15, color: colors.black },
+  jar: { position: 'absolute', left: 72, right: 72, gap: 4, alignItems: 'center' },
+  jarMeta: { fontFamily: fonts.medium, fontSize: 11, color: colors.purple },
+  cloud: { position: 'absolute', fontSize: 30, opacity: 0.8 },
+  item: { position: 'absolute', left: 0 },
   player: {
     position: 'absolute',
     left: PLAYER_X,
-    bottom: GROUND,
     width: PLAYER,
     height: PLAYER,
     borderRadius: PLAYER / 2,
@@ -257,7 +270,7 @@ const styles = StyleSheet.create({
     borderColor: colors.white,
     backgroundColor: colors.greyBg,
   },
-  ground: { position: 'absolute', left: 0, right: 0, bottom: 0, height: GROUND, backgroundColor: '#DCFA9D', overflow: 'hidden' },
+  ground: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.lime, overflow: 'hidden' },
   dashes: { flexDirection: 'row', gap: 24, paddingTop: 14 },
   dash: { width: 24, height: 6, borderRadius: 3, backgroundColor: 'rgba(98,82,206,0.18)' },
   overlay: {
@@ -268,14 +281,9 @@ const styles = StyleSheet.create({
     gap: 6,
     padding: 24,
   },
-  overlayTitle: { fontFamily: fonts.extraBold, fontSize: 24, color: colors.black },
-  overlayText: { fontFamily: fonts.regular, fontSize: 14, color: colors.grey, textAlign: 'center' },
-  tapHint: { fontFamily: fonts.bold, fontSize: 16, color: colors.purple, marginTop: 12 },
-  jar: { padding: 16, gap: 10, borderRadius: 20, backgroundColor: colors.white },
-  jarRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  jarTitle: { fontFamily: fonts.semiBold, fontSize: 15, color: colors.black },
-  jarMeta: { fontFamily: fonts.medium, fontSize: 12, color: colors.purple },
-  jarText: { fontFamily: fonts.regular, fontSize: 12, color: colors.grey },
+  overlayTitle: { fontFamily: fonts.extraBold, fontSize: 28, color: colors.black },
+  overlayText: { fontFamily: fonts.regular, fontSize: 15, color: colors.grey, textAlign: 'center' },
+  tapHint: { fontFamily: fonts.bold, fontSize: 17, color: colors.purple, marginTop: 12 },
   result: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(250,248,243,0.97)',
@@ -286,5 +294,6 @@ const styles = StyleSheet.create({
   },
   resultTitle: { fontFamily: fonts.extraBold, fontSize: 28, color: colors.black, textAlign: 'center' },
   resultText: { fontFamily: fonts.medium, fontSize: 16, color: colors.grey },
+  resultMeta: { fontFamily: fonts.regular, fontSize: 13, color: colors.grey, textAlign: 'center' },
   resultButtons: { alignSelf: 'stretch', gap: 8, marginTop: 24 },
 });
