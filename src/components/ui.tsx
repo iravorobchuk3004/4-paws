@@ -1,6 +1,6 @@
 import { Image, ImageProps } from 'expo-image';
 import { router } from 'expo-router';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
   Pressable,
   StyleProp,
@@ -126,15 +126,24 @@ export function FormField({
   error?: string | false;
   trailing?: ReactNode;
 }) {
+  const [focused, setFocused] = useState(false);
   return (
     <View style={{ gap: 4 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <View style={[styles.input, !!error && { borderColor: colors.error }]}>
+      <View style={[styles.input, focused && { borderColor: colors.purple }, !!error && { borderColor: colors.error }]}>
         <Icon source={icon} size={20} />
         <TextInput
           placeholderTextColor="rgba(98,97,95,0.43)"
           style={styles.inputText}
           {...input}
+          onFocus={(e) => {
+            setFocused(true);
+            input.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            input.onBlur?.(e);
+          }}
         />
         {trailing}
       </View>
@@ -234,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.purpleSelected,
+    borderColor: colors.greyOption,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',

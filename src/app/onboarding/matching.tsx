@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { FadeInUp } from '@/components/anim';
+import { FadeInUp, LikePop } from '@/components/anim';
 import { Celebration } from '@/components/Celebration';
 import { TreatCatch } from '@/components/TreatCatch';
 import { PrimaryButton } from '@/components/ui';
@@ -29,7 +29,7 @@ const checks = [
 // "Building your plan" moment from Headway: a progress count-up with a checklist,
 // one quick question halfway, and a treat-catching game to play while it loads.
 export default function Matching() {
-  const { preferences, user, goal, addTreats } = useApp();
+  const { preferences, user, goal, saved, toggleSaved, addTreats } = useApp();
   const [percent, setPercent] = useState(0);
   const [asking, setAsking] = useState(false);
   const [bones, setBones] = useState(0);
@@ -63,6 +63,7 @@ export default function Matching() {
     .map((p) => ({ ...p, match: matchScore(p, preferences) }))
     .sort((a, b) => b.match - a.match)
     .slice(0, 3);
+  const likedCount = top.filter((p) => saved.includes(p.id)).length;
   const great = profiles.filter((p) => matchScore(p, preferences) >= 85).length;
 
   const answer = () => {
@@ -77,19 +78,38 @@ export default function Matching() {
           <Celebration />
           <FadeInUp style={{ alignItems: 'center', gap: 8 }}>
             <Text style={styles.title}>We found {great} great matches!</Text>
-            <Text style={styles.text}>Here are the pets who’d fit your life best.</Text>
+            <Text style={styles.text}>Tap the heart on the ones you like to save them to My pets.</Text>
           </FadeInUp>
           <FadeInUp delay={150} style={styles.fan}>
-            {top.map((p, i) => (
-              <View
-                key={p.id}
-                style={[styles.fanCard, { transform: [{ rotate: `${(i - 1) * 8}deg` }, { translateY: i === 1 ? -12 : 0 }], zIndex: i === 1 ? 2 : 1 }]}
-              >
-                <Image source={p.thumb} style={styles.fanPhoto} contentFit="cover" />
-                <Text style={styles.fanName}>{p.name}</Text>
-                <Text style={styles.fanMatch}>{p.match}% match</Text>
-              </View>
-            ))}
+            {top.map((p, i) => {
+              const liked = saved.includes(p.id);
+              return (
+                <Pressable
+                  key={p.id}
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    toggleSaved(p.id);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: liked }}
+                  accessibilityLabel={`${liked ? 'Remove' : 'Save'} ${p.name}`}
+                  style={[
+                    styles.fanCard,
+                    liked && styles.fanCardLiked,
+                    { transform: [{ rotate: `${(i - 1) * 8}deg` }, { translateY: i === 1 ? -12 : 0 }], zIndex: i === 1 ? 2 : 1 },
+                  ]}
+                >
+                  <Image source={p.thumb} style={styles.fanPhoto} contentFit="cover" />
+                  <View style={styles.fanHeart}>
+                    <LikePop active={liked}>
+                      <Ionicons name={liked ? 'heart' : 'heart-outline'} size={18} color={colors.black} />
+                    </LikePop>
+                  </View>
+                  <Text style={styles.fanName}>{p.name}</Text>
+                  <Text style={styles.fanMatch}>{p.match}% match</Text>
+                </Pressable>
+              );
+            })}
           </FadeInUp>
           {bones > 0 && (
             <FadeInUp delay={300} style={styles.banked}>
@@ -99,7 +119,7 @@ export default function Matching() {
         </View>
         <View style={styles.bottom}>
           <PrimaryButton
-            title={user ? 'Show my matches' : 'Save my matches'}
+            title={likedCount ? `Save ${likedCount} ${likedCount === 1 ? 'pet' : 'pets'} & continue` : 'Continue'}
             onPress={() => (user ? enterApp(goal) : router.push('/onboarding/create-account'))}
           />
         </View>
@@ -181,7 +201,19 @@ const styles = StyleSheet.create({
   result: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, gap: 16 },
   fan: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
   fanCard: { width: 108, marginHorizontal: -6, padding: 6, borderRadius: 18, backgroundColor: colors.white, alignItems: 'center', gap: 2 },
+  fanCardLiked: { backgroundColor: colors.pinkLight },
   fanPhoto: { width: 96, height: 110, borderRadius: 14 },
+  fanHeart: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   fanName: { fontFamily: fonts.semiBold, fontSize: 14, color: colors.black, marginTop: 4 },
   fanMatch: { fontFamily: fonts.bold, fontSize: 12, color: colors.purple, marginBottom: 4 },
   banked: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 100, backgroundColor: colors.limeSoft },

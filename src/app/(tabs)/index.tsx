@@ -233,11 +233,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     gap: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.greyOption,
   },
   searchInput: { flex: 1, fontFamily: fonts.regular, fontSize: 16, color: colors.black },
   filterButton: {

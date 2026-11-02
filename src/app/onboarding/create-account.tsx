@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GoogleButton, GoogleSheet } from '@/components/GoogleSignIn';
 import { FormField, Icon, NavHeader, PageHeading, PrimaryButton } from '@/components/ui';
 import { finishOnboarding } from '@/lib/onboarding';
 import { isValidEmail, useApp } from '@/store';
@@ -17,6 +18,7 @@ export default function CreateAccount() {
   const [hidden, setHidden] = useState(true);
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [google, setGoogle] = useState(false);
 
   const nameError = submitted && !name.trim() && 'Please enter your name.';
   const emailError = submitted && !isValidEmail(email) && 'Please enter a valid email.';
@@ -97,7 +99,7 @@ export default function CreateAccount() {
         <Text style={styles.or}>or</Text>
 
         <View style={styles.social}>
-          <SocialButton label="Continue with Google" icon="logo-google" color="#4285F4" />
+          <GoogleButton onPress={() => setGoogle(true)} />
           <SocialButton label="Continue with Apple" icon="logo-apple" color={colors.black} />
           <View style={styles.alt}>
             <Text style={styles.altText}>Already have an account? </Text>
@@ -111,12 +113,23 @@ export default function CreateAccount() {
       <View style={styles.bottom}>
         <PrimaryButton title="Create account & continue" onPress={submit} />
       </View>
+
+      {google && (
+        <GoogleSheet
+          onClose={() => setGoogle(false)}
+          onPick={(account) => {
+            setGoogle(false);
+            setUser(account);
+            finishOnboarding();
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
-// Social sign-in needs provider keys and a backend, so for now it points people to email.
-function SocialButton({ label, icon, color }: { label: string; icon: 'logo-google' | 'logo-apple'; color: string }) {
+// Apple sign-in needs a development build and an Apple developer account, so for now it points people to email.
+function SocialButton({ label, icon, color }: { label: string; icon: 'logo-apple'; color: string }) {
   return (
     <Pressable
       style={styles.socialButton}

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GoogleButton, GoogleSheet } from '@/components/GoogleSignIn';
 import { FormField, Icon, NavHeader, PageHeading, PrimaryButton } from '@/components/ui';
 import { isValidEmail, useApp } from '@/store';
 import { colors, fonts } from '@/theme';
@@ -18,6 +19,7 @@ export default function SignIn() {
   const [email, setEmail] = useState(user?.email ?? '');
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [google, setGoogle] = useState(false);
 
   const emailError = submitted && !isValidEmail(email) && 'Please enter a valid email.';
   const passwordError = submitted && password.length < 8 && 'Use at least 8 characters.';
@@ -79,6 +81,8 @@ export default function SignIn() {
           <Pressable onPress={forgot} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
             <Text style={styles.forgot}>Forgot password?</Text>
           </Pressable>
+          <Text style={styles.or}>or</Text>
+          <GoogleButton onPress={() => setGoogle(true)} />
         </View>
         <View style={styles.alt}>
           <Text style={styles.altText}>New to 4 Paws? </Text>
@@ -91,6 +95,18 @@ export default function SignIn() {
       <View style={styles.bottom}>
         <PrimaryButton title="Continue" onPress={submit} />
       </View>
+
+      {google && (
+        <GoogleSheet
+          onClose={() => setGoogle(false)}
+          onPick={(account) => {
+            setGoogle(false);
+            setUser(account);
+            router.dismissAll();
+            router.replace('/(tabs)');
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -98,6 +114,7 @@ export default function SignIn() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
   form: { paddingHorizontal: 16, gap: 16, marginTop: 20 },
+  or: { fontFamily: fonts.regular, fontSize: 14, color: colors.grey, textAlign: 'center' },
   forgot: { fontFamily: fonts.semiBold, fontSize: 14, color: colors.black, marginTop: -4 },
   alt: { height: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 16 },
   altText: { fontFamily: fonts.regular, fontSize: 14, color: colors.black },

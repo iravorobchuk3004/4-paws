@@ -1,13 +1,12 @@
 import { router } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/tabs';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PressableScale } from '@/components/anim';
 import { Icon } from '@/components/ui';
-import { colors, fonts, shadow } from '@/theme';
+import { colors, fonts } from '@/theme';
 
 // Active icons come from the design; Support has no active variant there, so it is tinted.
 const tabs: Record<string, { label: string; icon: number; activeIcon?: number }> = {
@@ -38,12 +37,7 @@ export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
   const activeTab = tabs[current] ? current : 'index';
 
   return (
-    <LinearGradient
-      colors={['rgba(250,248,243,0)', 'rgba(250,248,243,0.92)', colors.cream]}
-      locations={[0, 0.45, 1]}
-      style={[styles.container, { paddingBottom: Math.max(insets.bottom, 8) }]}
-      pointerEvents="box-none"
-    >
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 8) }]} pointerEvents="box-none">
       {showsFoundButton.includes(current) && (
         <FoundButton />
       )}
@@ -71,7 +65,7 @@ export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
           );
         })}
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -145,7 +139,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingTop: 30,
     paddingHorizontal: 16,
     alignItems: 'center',
     gap: 7,
@@ -169,12 +162,17 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     height: 78,
     borderRadius: 200,
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: colors.white,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 12,
-    ...shadow.card,
+    // One soft shadow, just enough to lift the bar off the content.
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   item: { alignItems: 'center', gap: 4, minWidth: 67 },
   label: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 20, color: colors.black },

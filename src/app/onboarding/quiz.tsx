@@ -10,6 +10,7 @@ import { PressableScale } from '@/components/anim';
 import { WigglingMascot } from '@/components/Celebration';
 import { stories } from '@/data/pets';
 import { Answers, lifestyle, onboardingQuiz, Option, QuizStep } from '@/data/quiz';
+import { enterApp } from '@/lib/onboarding';
 import { Goal, useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
@@ -87,14 +88,16 @@ export default function Quiz() {
     const updated = { ...answers, [q.id]: [value] };
     setAnswers(updated);
 
-    // The goal decides the route: only adopters go through the lifestyle questions.
+    // The goal decides the route: adopters take the lifestyle questions, people just looking
+    // around go straight into the app as a guest, and the rest create an account.
     if (q.id === 'goal') {
       setGoal(value as Goal);
       if (value !== 'adopt') {
         advancing.current = true;
         setTimeout(() => {
           advancing.current = false;
-          router.push('/onboarding/create-account');
+          if (value === 'explore') enterApp('explore');
+          else router.push('/onboarding/create-account');
         }, ADVANCE_MS);
         return;
       }
