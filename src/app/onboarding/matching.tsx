@@ -3,10 +3,10 @@ import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { FadeInUp, PressableScale } from '@/components/anim';
+import { FadeInUp } from '@/components/anim';
 import { Celebration } from '@/components/Celebration';
 import { TreatCatch } from '@/components/TreatCatch';
 import { PrimaryButton } from '@/components/ui';
@@ -32,22 +32,25 @@ export default function Matching() {
   const { preferences, user, goal, addTreats } = useApp();
   const [percent, setPercent] = useState(0);
   const [asking, setAsking] = useState(false);
-  const [asked, setAsked] = useState(false);
   const [bones, setBones] = useState(0);
   const banked = useRef(false);
+  // The loop keeps its own copy of the progress, so pausing for the question never loses or repeats it.
+  const progress = useRef({ percent: 0, asked: false });
   const done = percent >= 100;
 
   useEffect(() => {
     if (done || asking) return;
     const timer = setInterval(() => {
-      setPercent((p) => {
-        const next = Math.min(100, p + (100 * TICK_MS) / TOTAL_MS);
-        if (!asked && p < QUESTION_AT && next >= QUESTION_AT) setAsking(true);
-        return next;
-      });
+      const p = progress.current;
+      p.percent = Math.min(100, p.percent + (100 * TICK_MS) / TOTAL_MS);
+      setPercent(p.percent);
+      if (!p.asked && p.percent >= QUESTION_AT) {
+        p.asked = true;
+        setAsking(true);
+      }
     }, TICK_MS);
     return () => clearInterval(timer);
-  }, [done, asking, asked]);
+  }, [done, asking]);
 
   useEffect(() => {
     if (!done || banked.current) return;
@@ -63,8 +66,8 @@ export default function Matching() {
   const great = profiles.filter((p) => matchScore(p, preferences) >= 85).length;
 
   const answer = () => {
+    Haptics.selectionAsync().catch(() => {});
     setAsking(false);
-    setAsked(true);
   };
 
   if (done) {
@@ -138,22 +141,23 @@ export default function Matching() {
         <Text style={styles.gameHint}>Every bone goes to the meal jar for shelter pets.</Text>
       </View>
 
-      <Modal visible={asking} transparent animationType="fade">
+      {/* An in-screen overlay rather than a native Modal, so its buttons always get the taps. */}
+      {asking && (
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
             <Text style={styles.sheetLabel}>Quick question</Text>
             <Text style={styles.sheetTitle}>Would you like to meet a pet in person this month?</Text>
             <View style={styles.sheetRow}>
-              <PressableScale onPress={answer} style={[styles.sheetButton, styles.sheetNo]}>
+              <Pressable onPress={answer} style={[styles.sheetButton, styles.sheetNo]} hitSlop={6}>
                 <Text style={[styles.sheetButtonText, { color: colors.black }]}>Not yet</Text>
-              </PressableScale>
-              <PressableScale onPress={answer} style={styles.sheetButton}>
+              </Pressable>
+              <Pressable onPress={answer} style={styles.sheetButton} hitSlop={6}>
                 <Text style={styles.sheetButtonText}>Yes!</Text>
-              </PressableScale>
+              </Pressable>
             </View>
           </View>
         </View>
-      </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -183,7 +187,17 @@ const styles = StyleSheet.create({
   banked: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 100, backgroundColor: colors.limeSoft },
   bankedText: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.black },
   bottom: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(27,27,27,0.4)', justifyContent: 'center', padding: 24 },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    backgroundColor: 'rgba(27,27,27,0.4)',
+    justifyContent: 'center',
+    padding: 24,
+  },
   sheet: { padding: 24, borderRadius: 28, backgroundColor: colors.white, gap: 12 },
   sheetLabel: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.purple },
   sheetTitle: { fontFamily: fonts.extraBold, fontSize: 22, lineHeight: 28, color: colors.black },

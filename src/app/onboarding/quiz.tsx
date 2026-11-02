@@ -53,6 +53,13 @@ export default function Quiz() {
     setIndex(index + 1);
   };
 
+  // Skips the rest of the quiz; whatever was answered so far still shapes the matches.
+  const skip = () => {
+    if (advancing.current) return;
+    if (!answers.goal) setGoal('adopt');
+    finish(answers);
+  };
+
   const back = () => {
     if (index === 0) return router.back();
     setDirection(-1);
@@ -108,6 +115,11 @@ export default function Quiz() {
         <Text style={styles.counter}>
           {index + 1}/{steps.length}
         </Text>
+        {!edit && (
+          <Pressable onPress={skip} hitSlop={10} style={styles.skip} accessibilityLabel="Skip the questions">
+            <Text style={styles.skipText}>Skip</Text>
+          </Pressable>
+        )}
       </View>
 
       <StepIn key={step.id} direction={direction}>
@@ -323,6 +335,8 @@ const styles = StyleSheet.create({
   back: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   track: { flex: 1, height: 6, borderRadius: 3, backgroundColor: 'rgba(27,27,27,0.08)', overflow: 'hidden' },
   bar: { flex: 1, borderRadius: 3, backgroundColor: colors.purple, transformOrigin: 'left' },
+  skip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.7)' },
+  skipText: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.black },
   counter: { fontFamily: fonts.semiBold, fontSize: 13, color: colors.grey, minWidth: 32, textAlign: 'right' },
   body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 8 },
   title: { fontFamily: fonts.extraBold, fontSize: 28, lineHeight: 34, color: colors.black },

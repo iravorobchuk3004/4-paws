@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -30,26 +29,23 @@ const slides = [
     title: 'Find a friend who fits your life',
     text: 'Tell us about your routine and we’ll match you with pets who’ll love it.',
     mascot: 'dog' as const,
-    photos: [require('../../assets/pets/maxi.jpg'), require('../../assets/pets/luna.jpg')],
     color: colors.lime,
   },
   {
     title: 'Help without adopting',
     text: 'Feed a named pet’s care fund and watch them get better.',
     mascot: 'cat' as const,
-    photos: [require('../../assets/pets/milo.jpg'), require('../../assets/pets/ginger.jpg')],
     color: colors.pink,
   },
   {
     title: 'Found a pet? We’ve got you',
     text: 'A photo and a pin on the map. Nearby shelters take it from there.',
     mascot: 'rabbit' as const,
-    photos: [require('../../assets/pets/snowball.jpg'), require('../../assets/pets/kiwi.jpg')],
     color: colors.yellow,
   },
 ];
 
-// First-launch walkthrough: the wiggling mascots on splash colours, and a "give a paw" hold to begin.
+// First-launch walkthrough: only the wiggling Figma mascots on splash colours, and a "give a paw" hold to begin.
 export default function Intro() {
   const { finishIntro } = useApp();
   const { width } = useWindowDimensions();
@@ -118,14 +114,8 @@ export default function Intro() {
             <View key={slide.title} style={{ width }}>
               <View style={styles.stage}>
                 <View style={styles.sun} />
-                <Animated.View style={[styles.photo, styles.photoLeft, { transform: [{ translateX: parallax(-60) }, { rotate: '-10deg' }] }]}>
-                  <Image source={slide.photos[0]} style={styles.fill} contentFit="cover" />
-                </Animated.View>
-                <Animated.View style={[styles.photo, styles.photoRight, { transform: [{ translateX: parallax(-30) }, { rotate: '8deg' }] }]}>
-                  <Image source={slide.photos[1]} style={styles.fill} contentFit="cover" />
-                </Animated.View>
                 <Animated.View style={{ alignItems: 'center', transform: [{ translateX: parallax(width * 0.5) }] }}>
-                  <WigglingMascot animal={slide.mascot} width={230} height={230} />
+                  <WigglingMascot animal={slide.mascot} width={260} height={260} />
                   <View style={styles.shadow} />
                 </Animated.View>
               </View>
@@ -247,19 +237,7 @@ const styles = StyleSheet.create({
   skip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.7)' },
   skipText: { fontFamily: fonts.semiBold, fontSize: 14, color: colors.black },
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  sun: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(255,255,255,0.55)' },
-  photo: {
-    position: 'absolute',
-    width: 96,
-    height: 112,
-    borderRadius: 18,
-    overflow: 'hidden',
-    borderWidth: 4,
-    borderColor: colors.white,
-    backgroundColor: colors.white,
-  },
-  photoLeft: { left: 22, top: '12%' },
-  photoRight: { right: 24, bottom: '10%' },
+  sun: { position: 'absolute', width: 290, height: 290, borderRadius: 145, backgroundColor: 'rgba(255,255,255,0.55)' },
   shadow: { width: 120, height: 14, borderRadius: 7, backgroundColor: 'rgba(27,27,27,0.08)', marginTop: 4 },
   copy: { height: TEXT_H, paddingHorizontal: 28, paddingTop: 28, gap: 8 },
   title: { fontFamily: fonts.extraBold, fontSize: 26, lineHeight: 32, color: colors.black, textAlign: 'center' },
