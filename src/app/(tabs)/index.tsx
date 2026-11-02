@@ -92,10 +92,7 @@ export default function Home() {
             returnKeyType="search"
             onSubmitEditing={search}
           />
-          <Pressable
-            style={styles.filterButton}
-            onPress={() => router.push({ pathname: '/onboarding/quiz', params: { edit: 'filters' } })}
-          >
+          <Pressable style={styles.filterButton} onPress={() => router.push('/filters')} accessibilityLabel="Filters">
             <Icon source={require('../../../assets/figma/icon-filters.svg')} size={20} />
           </Pressable>
         </FadeInUp>

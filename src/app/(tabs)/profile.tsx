@@ -31,7 +31,7 @@ const settings = [
     title: 'Adoption preferences',
     text: 'Lifestyle & ideal companion',
     icon: require('../../../assets/figma/set-paw.svg'),
-    onPress: () => router.push({ pathname: '/onboarding/quiz', params: { edit: '1' } }),
+    onPress: () => router.push('/filters'),
   },
   {
     title: 'Notifications',
