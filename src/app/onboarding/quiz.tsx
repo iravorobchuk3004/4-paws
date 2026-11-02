@@ -297,14 +297,22 @@ function StatementStep({ statement, selected, onPick }: { statement: string; sel
       </View>
       <View style={styles.reactions}>
         {reactions.map((r) => (
-          <PressableScale
+          // A plain Pressable carries flex: 1 itself; inside PressableScale the flex sat on the
+          // inner view, so the three buttons collapsed and their text disappeared.
+          <Pressable
             key={r.value}
             onPress={() => onPick(r.value)}
-            style={[styles.reaction, selected === r.value && styles.optionSelected]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: selected === r.value }}
+            style={({ pressed }) => [
+              styles.reaction,
+              selected === r.value && styles.optionSelected,
+              pressed && { transform: [{ scale: 0.96 }] },
+            ]}
           >
             <Text style={styles.reactionEmoji}>{r.emoji}</Text>
             <Text style={styles.reactionLabel}>{r.label}</Text>
-          </PressableScale>
+          </Pressable>
         ))}
       </View>
     </View>

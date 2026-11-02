@@ -1,162 +1,133 @@
-import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Icon, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { FadeInUp, PressableScale } from '@/components/anim';
+import { WigglingMascot } from '@/components/Celebration';
+import { enterApp } from '@/lib/onboarding';
 import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
+const perks = [
+  { emoji: '🧩', title: 'A 1-minute quiz', text: 'We match you with pets who fit your life.' },
+  { emoji: '💜', title: 'Help without adopting', text: 'Support a named pet’s care.' },
+  { emoji: '📍', title: 'Found a pet?', text: 'Get it help in three short steps.' },
+];
+
+// Welcome in the same language as the quiz: the mascots on a splash colour, big type,
+// emoji tiles and one clear purple button.
 export default function Welcome() {
   const { setGoal } = useApp();
-  // "Get started" runs the full quiz; "Support pets" skips straight to the account.
-  const start = (goal: 'adopt' | 'help') => {
-    if (goal === 'adopt') return router.push('/onboarding/quiz');
-    setGoal(goal);
-    router.push('/onboarding/create-account');
+
+  const explore = () => {
+    setGoal('explore');
+    enterApp('explore');
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.hero}>
-          <Image
-            source={require('../../assets/figma/welcome-hero.png')}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-          />
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(98,82,206,0.08)' }]} />
-          <View style={styles.heroTop}>
-            <View style={styles.badge}>
-              <Icon source={require('../../assets/figma/heart-purple.svg')} size={16} />
-              <Text style={styles.badgeText}>Adopt. Support. Repeat.</Text>
-            </View>
-            <View style={styles.iconWrap}>
-              <Icon source={require('../../assets/figma/bone-purple.svg')} size={18} />
-            </View>
+      <View style={styles.header}>
+        <View style={styles.brand}>
+          <Ionicons name="paw" size={18} color={colors.purple} />
+          <Text style={styles.brandText}>4 Paws</Text>
+        </View>
+        <Pressable onPress={() => router.push('/onboarding/sign-in')} hitSlop={10} style={styles.pill}>
+          <Text style={styles.pillText}>Sign in</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.body}>
+        <FadeInUp style={styles.hero}>
+          <View style={[styles.sun, { width: 220, height: 220, borderRadius: 110 }]} />
+          <View style={[styles.side, { left: 6, transform: [{ rotate: '-8deg' }] }]}>
+            <WigglingMascot animal="cat" width={120} height={150} />
           </View>
-        </View>
+          <View style={[styles.side, { right: 6, transform: [{ rotate: '8deg' }] }]}>
+            <WigglingMascot animal="rabbit" width={120} height={150} />
+          </View>
+          <WigglingMascot animal="dog" width={180} height={210} />
+        </FadeInUp>
 
-        <View style={styles.copy}>
-          <Text style={styles.title}>Welcome to 4 Paws</Text>
-          <Text style={styles.subtitle}>
-            Discover pets, support shelters, and start your adoption journey with one tap.
-          </Text>
-        </View>
+        <FadeInUp delay={100} style={{ gap: 8 }}>
+          <Text style={styles.title}>Find a friend who fits your life</Text>
+          <Text style={styles.subtitle}>Adopt, support or help a lost pet, all in one place.</Text>
+        </FadeInUp>
 
-        <View style={styles.actions}>
-          <QuickAction
-            label="Search pets"
-            icon={require('../../assets/figma/search-white.svg')}
-            iconSize={24}
-            onPress={() => router.push('/browse')}
-          />
-          <QuickAction
-            label="Support pets"
-            icon={require('../../assets/figma/heart-white.svg')}
-            iconSize={18}
-            onPress={() => start('help')}
-          />
+        <View style={styles.perks}>
+          {perks.map((p, i) => (
+            <FadeInUp key={p.title} delay={180 + i * 60} style={styles.perk}>
+              <View style={styles.emojiWrap}>
+                <Text style={styles.emoji}>{p.emoji}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.perkTitle}>{p.title}</Text>
+                <Text style={styles.perkText}>{p.text}</Text>
+              </View>
+            </FadeInUp>
+          ))}
         </View>
       </View>
 
       <View style={styles.bottom}>
-        <PrimaryButton
-          title="Get started"
-          icon={require('../../assets/figma/arrow-right-white.svg')}
-          onPress={() => start('adopt')}
-        />
-        <SecondaryButton title="Explore as a guest" onPress={() => router.push('/(tabs)')} />
-        <View style={styles.signIn}>
-          <Text style={styles.signInText}>Already have an account? </Text>
-          <Pressable onPress={() => router.push('/onboarding/sign-in')} hitSlop={8}>
-            <Text style={[styles.signInText, styles.signInLink]}>Sign in</Text>
-          </Pressable>
-        </View>
+        <PressableScale onPress={() => router.push('/onboarding/quiz')} style={styles.cta}>
+          <Text style={styles.ctaText}>Get started</Text>
+          <Ionicons name="arrow-forward" size={20} color={colors.white} />
+        </PressableScale>
+        <PressableScale onPress={explore} style={styles.ghost}>
+          <Text style={styles.ghostText}>Explore as a guest</Text>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );
 }
 
-function QuickAction({
-  label,
-  icon,
-  iconSize,
-  onPress,
-}: {
-  label: string;
-  icon: number;
-  iconSize: number;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable style={styles.action} onPress={onPress}>
-      <View style={styles.actionIcon}>
-        <Icon source={icon} size={iconSize} />
-      </View>
-      <Text style={styles.actionText}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  content: { flex: 1, paddingHorizontal: 16, paddingVertical: 16, gap: 20, alignItems: 'center' },
-  hero: { height: 220, alignSelf: 'stretch', borderRadius: 24, overflow: 'hidden', padding: 20 },
-  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  badge: {
+  header: { height: 48, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  brandText: { fontFamily: fonts.extraBold, fontSize: 18, color: colors.black },
+  pill: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, backgroundColor: colors.white },
+  pillText: { fontFamily: fonts.semiBold, fontSize: 14, color: colors.black },
+  body: { flex: 1, paddingHorizontal: 20, gap: 20 },
+  hero: {
+    height: 250,
+    borderRadius: 32,
+    backgroundColor: colors.lime,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  sun: { position: 'absolute', top: 18, backgroundColor: 'rgba(255,255,255,0.55)' },
+  side: { position: 'absolute', bottom: 0 },
+  title: { fontFamily: fonts.extraBold, fontSize: 28, lineHeight: 34, color: colors.black },
+  subtitle: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22, color: colors.grey },
+  perks: { gap: 14 },
+  perk: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  emojiWrap: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  emoji: { fontSize: 22, lineHeight: 28 },
+  perkTitle: { fontFamily: fonts.semiBold, fontSize: 15, lineHeight: 21, color: colors.black },
+  perkText: { fontFamily: fonts.regular, fontSize: 13, lineHeight: 18, color: colors.grey },
+  bottom: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8, gap: 10 },
+  cta: {
+    height: 56,
+    borderRadius: 100,
+    backgroundColor: colors.purple,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    justifyContent: 'center',
+    gap: 8,
+  },
+  ctaText: { fontFamily: fonts.semiBold, fontSize: 16, color: colors.white },
+  ghost: {
+    height: 56,
     borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-  },
-  badgeText: { fontFamily: fonts.semiBold, fontSize: 16, lineHeight: 22, color: colors.black },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  copy: { gap: 8, alignItems: 'center' },
-  title: {
-    fontFamily: fonts.extraBold,
-    fontSize: 32,
-    lineHeight: 40,
-    color: colors.black,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontFamily: fonts.regular,
-    fontSize: 16,
-    lineHeight: 22,
-    color: colors.grey,
-    textAlign: 'center',
-  },
-  actions: { flexDirection: 'row', gap: 12, alignSelf: 'stretch' },
-  action: {
-    flex: 1,
-    height: 96,
-    padding: 14,
-    gap: 10,
-    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.greyOption,
     backgroundColor: colors.white,
-  },
-  actionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.purple,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionText: { fontFamily: fonts.bold, fontSize: 15, color: colors.black },
-  bottom: { paddingHorizontal: 20, gap: 8, paddingBottom: 8 },
-  signIn: { flexDirection: 'row', justifyContent: 'center', paddingTop: 4 },
-  signInText: { fontFamily: fonts.regular, fontSize: 14, color: colors.black },
-  signInLink: { fontFamily: fonts.semiBold, color: colors.purple, textDecorationLine: 'underline' },
+  ghostText: { fontFamily: fonts.semiBold, fontSize: 16, color: colors.black },
 });
