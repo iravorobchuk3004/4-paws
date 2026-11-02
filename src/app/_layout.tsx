@@ -35,6 +35,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="application-sent" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="donation-thanks" options={{ animation: 'fade', gestureEnabled: false }} />
+        <Stack.Screen name="onboarding/matching" options={{ animation: 'fade', gestureEnabled: false }} />
         <Stack.Screen name="play/[id]" options={{ animation: 'fade_from_bottom', gestureEnabled: false }} />
       </Stack>
     </AppProvider>

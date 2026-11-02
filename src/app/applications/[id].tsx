@@ -8,6 +8,7 @@ import { Tag } from '@/components/PetRow';
 import { ShelterMap } from '@/components/ShelterMap';
 import { Timeline } from '@/components/Timeline';
 import { NavHeader, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { WaitPlayCard } from '@/components/WaitPlayCard';
 import { getProfile } from '@/data/profiles';
 import { formatDate, useApp } from '@/store';
 import { colors, fonts } from '@/theme';
@@ -92,14 +93,7 @@ export default function ApplicationStatus() {
         )}
 
         {active && (
-          <Pressable style={styles.play} onPress={() => router.push(`/play/${pet.id}`)}>
-            <Text style={styles.playEmoji}>🦴</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.playTitle}>While you wait: Treat Run</Text>
-              <Text style={styles.playText}>Play with {pet.name} · bones feed shelter pets</Text>
-            </View>
-            <Ionicons name="play-circle" size={32} color={colors.white} />
-          </Pressable>
+          <WaitPlayCard petId={pet.id} wait="The shelter replies within 2 days" />
         )}
       </ScrollView>
 
@@ -136,9 +130,5 @@ const styles = StyleSheet.create({
     borderColor: colors.purple,
   },
   contactText: { fontFamily: fonts.semiBold, fontSize: 15, color: colors.purple },
-  play: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 20, backgroundColor: colors.purple },
-  playEmoji: { fontSize: 28 },
-  playTitle: { fontFamily: fonts.bold, fontSize: 15, color: colors.white },
-  playText: { fontFamily: fonts.regular, fontSize: 12, color: colors.purpleSelected },
   bottom: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
 });

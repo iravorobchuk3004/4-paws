@@ -21,13 +21,19 @@ const PLAYER_X = 28;
 const GRAVITY = 2600;
 const JUMP = 920;
 const SLOTS = 6;
-const SIZE = { bone: 34, bath: 44 };
+const SIZE = { bone: 34, star: 36, ball: 34, bath: 44 };
+const EMOJI = { bone: '🦴', star: '⭐', ball: '🎾', bath: '🛁' };
+const SHIELD_S = 6;
+// Bones in a row without missing one raise the multiplier.
+const comboMultiplier = (combo: number) => (combo >= 12 ? 3 : combo >= 5 ? 2 : 1);
 
 type Kind = keyof typeof SIZE;
 type Item = { kind: Kind; x: number; y: number; alive: boolean };
 type Phase = 'ready' | 'playing' | 'over';
 
 // Full-screen endless runner: tap anywhere to jump over bath tubs and catch bones.
+// Stars are worth 5, a tennis ball gives a few seconds of bath-proof shield,
+// and catching bones in a row builds a x2 / x3 combo.
 export default function TreatRun() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const pet = getProfile(id);
@@ -40,22 +46,30 @@ export default function TreatRun() {
   const [score, setScore] = useState(0);
   const [kinds, setKinds] = useState<Kind[]>(() => Array(SLOTS).fill('bone'));
   const [newMeal, setNewMeal] = useState(false);
+  const [combo, setCombo] = useState(0);
+  const [shielded, setShielded] = useState(false);
+  const [popText, setPopText] = useState('');
 
   // Animated positions are driven straight from the game loop, so frames don't re-render React.
   const [playerY] = useState(() => new Animated.Value(0));
   const [spin] = useState(() => new Animated.Value(0));
   const [groundX] = useState(() => new Animated.Value(0));
+  const [pop] = useState(() => new Animated.Value(1));
   const [slots] = useState(() =>
     Array.from({ length: SLOTS }, () => ({ pos: new Animated.ValueXY({ x: -100, y: 0 }), opacity: new Animated.Value(0) })),
   );
-  const game = useRef({ y: 0, vy: 0, jumps: 0, speed: 260, dist: 0, spawnIn: 0.8, score: 0, items: [] as Item[] });
+  const game = useRef({
+    y: 0, vy: 0, jumps: 0, speed: 260, dist: 0, spawnIn: 0.8, score: 0, combo: 0, shield: 0, items: [] as Item[],
+  });
 
   const start = () => {
     const g = game.current;
-    Object.assign(g, { y: 0, vy: 0, jumps: 0, speed: 260, dist: 0, spawnIn: 0.8, score: 0 });
+    Object.assign(g, { y: 0, vy: 0, jumps: 0, speed: 260, dist: 0, spawnIn: 0.8, score: 0, combo: 0, shield: 0 });
     g.items = Array.from({ length: SLOTS }, () => ({ kind: 'bone' as Kind, x: -100, y: 0, alive: false }));
     slots.forEach((s) => s.opacity.setValue(0));
     setScore(0);
+    setCombo(0);
+    setShielded(false);
     setNewMeal(false);
     setPhase('playing');
   };
@@ -82,10 +96,22 @@ export default function TreatRun() {
       setPhase('over');
     };
 
+    // "+2" style popup above the pet.
+    const flash = (text: string) => {
+      setPopText(text);
+      pop.setValue(0);
+      Animated.timing(pop, { toValue: 1, duration: 650, useNativeDriver: true }).start();
+    };
+
     const tick = () => {
       const now = Date.now();
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+
+      if (g.shield > 0) {
+        g.shield -= dt;
+        if (g.shield <= 0) setShielded(false);
+      }
 
       // Pet physics.
       g.vy -= GRAVITY * dt;
@@ -109,8 +135,10 @@ export default function TreatRun() {
       if (g.spawnIn <= 0) {
         const free = g.items.findIndex((it) => !it.alive);
         if (free >= 0) {
-          const kind: Kind = Math.random() < 0.38 ? 'bath' : 'bone';
-          g.items[free] = { kind, x: width + 20, y: kind === 'bath' ? 0 : 20 + Math.random() * 210, alive: true };
+          const r = Math.random();
+          const kind: Kind = r < 0.36 ? 'bath' : r < 0.42 ? 'ball' : r < 0.5 ? 'star' : 'bone';
+          const y = kind === 'bath' ? 0 : kind === 'star' ? 150 + Math.random() * 110 : 20 + Math.random() * 210;
+          g.items[free] = { kind, x: width + 20, y, alive: true };
           slots[free].opacity.setValue(1);
           setKinds((k) => (k[free] === kind ? k : k.map((v, i) => (i === free ? kind : v))));
         }
@@ -126,6 +154,11 @@ export default function TreatRun() {
         if (it.x < -size) {
           it.alive = false;
           slots[i].opacity.setValue(0);
+          // A missed bone breaks the combo.
+          if (it.kind === 'bone' && g.combo) {
+            g.combo = 0;
+            setCombo(0);
+          }
           continue;
         }
         slots[i].pos.setValue({ x: it.x, y: -it.y });
@@ -133,18 +166,37 @@ export default function TreatRun() {
         const hit =
           PLAYER_X + m < it.x + size && PLAYER_X + PLAYER - m > it.x && g.y + m < it.y + size && g.y + PLAYER - m > it.y;
         if (!hit) continue;
-        if (it.kind === 'bath') return end();
         it.alive = false;
         slots[i].opacity.setValue(0);
-        g.score += 1;
+        if (it.kind === 'bath') {
+          if (g.shield <= 0) return end();
+          // The ball's shield splashes through one bath tub.
+          g.shield = 0;
+          setShielded(false);
+          flash('💦 Splash!');
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+          continue;
+        }
+        if (it.kind === 'ball') {
+          g.shield = SHIELD_S;
+          setShielded(true);
+          flash('🎾 Shield!');
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+          continue;
+        }
+        g.combo += 1;
+        const points = (it.kind === 'star' ? 5 : 1) * comboMultiplier(g.combo);
+        g.score += points;
         setScore(g.score);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        setCombo(g.combo);
+        flash(`+${points}`);
+        Haptics.impactAsync(it.kind === 'star' ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Light).catch(() => {});
       }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [phase, width, slots, playerY, groundX, spin, addTreats, treats]);
+  }, [phase, width, slots, playerY, groundX, spin, pop, addTreats, treats]);
 
   const total = phase === 'over' ? treats : treats + score;
   const meals = mealsFrom(total);
@@ -165,7 +217,7 @@ export default function TreatRun() {
               { bottom: floor, fontSize: SIZE[kinds[i]] - 4, opacity: s.opacity, transform: s.pos.getTranslateTransform() },
             ]}
           >
-            {kinds[i] === 'bath' ? '🛁' : '🦴'}
+            {EMOJI[kinds[i]]}
           </Animated.Text>
         ))}
 
@@ -183,6 +235,25 @@ export default function TreatRun() {
         >
           <Image source={pet.thumb} style={styles.fill} contentFit="cover" />
         </Animated.View>
+        {shielded && (
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.shield, { bottom: floor - 8, transform: [{ translateY: playerY }] }]}
+          />
+        )}
+        <Animated.Text
+          pointerEvents="none"
+          style={[
+            styles.pop,
+            {
+              bottom: floor + PLAYER + 8,
+              opacity: pop.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0] }),
+              transform: [{ translateY: Animated.add(playerY, pop.interpolate({ inputRange: [0, 1], outputRange: [0, -36] })) }],
+            },
+          ]}
+        >
+          {popText}
+        </Animated.Text>
 
         <View style={[styles.ground, { height: floor }]}>
           <Animated.View style={[styles.dashes, { transform: [{ translateX: groundX }] }]}>
@@ -197,6 +268,8 @@ export default function TreatRun() {
             <Text style={styles.overlayTitle}>Run with {pet.name}!</Text>
             <Text style={styles.overlayText}>Tap anywhere to jump · tap twice for a double jump</Text>
             <Text style={styles.overlayText}>Catch 🦴 · dodge the bath 🛁</Text>
+            <Text style={styles.overlayText}>⭐ = 5 bones · 🎾 = splash through one bath</Text>
+            <Text style={styles.overlayText}>Bones in a row = x2, then x3 🔥</Text>
             <Text style={styles.tapHint}>Tap to start</Text>
           </View>
         )}
@@ -209,7 +282,11 @@ export default function TreatRun() {
         </Pressable>
         <View style={styles.scoreWrap} pointerEvents="none">
           <Text style={styles.score}>🦴 {score}</Text>
-          <Text style={styles.best}>Best {Math.max(bestRun, phase === 'over' ? 0 : score)}</Text>
+          {comboMultiplier(combo) > 1 ? (
+            <Text style={styles.combo}>x{comboMultiplier(combo)} combo 🔥</Text>
+          ) : (
+            <Text style={styles.best}>Best {Math.max(bestRun, phase === 'over' ? 0 : score)}</Text>
+          )}
         </View>
         <View style={styles.meals} pointerEvents="none">
           <Text style={styles.mealsText}>🍲 {meals}</Text>
@@ -240,6 +317,18 @@ export default function TreatRun() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.purpleTint },
+  shield: {
+    position: 'absolute',
+    left: PLAYER_X - 8,
+    width: PLAYER + 16,
+    height: PLAYER + 16,
+    borderRadius: (PLAYER + 16) / 2,
+    borderWidth: 4,
+    borderColor: colors.lime,
+    backgroundColor: 'rgba(220,250,157,0.25)',
+  },
+  pop: { position: 'absolute', left: PLAYER_X - 20, width: PLAYER + 40, textAlign: 'center', fontFamily: fonts.extraBold, fontSize: 20, color: colors.purple },
+  combo: { fontFamily: fonts.bold, fontSize: 12, color: colors.purple },
   fill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   hud: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
   back: {

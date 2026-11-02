@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Celebration, critterFor } from '@/components/Celebration';
 import { getProfile } from '@/data/profiles';
 import { Icon, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { WaitPlayCard } from '@/components/WaitPlayCard';
 import { colors, fonts } from '@/theme';
 
 const steps = [
@@ -56,6 +57,7 @@ export default function ApplicationSent() {
             </View>
           ))}
         </View>
+        <WaitPlayCard petId={id} wait="While the shelter reviews your request" />
       </View>
 
       <View style={styles.bottom}>

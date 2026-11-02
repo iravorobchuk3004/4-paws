@@ -115,9 +115,6 @@ export default function PetDetails() {
       </ScrollView>
 
       <View style={styles.bottom}>
-        <Pressable style={styles.playButton} onPress={() => router.push(`/play/${pet.id}`)} accessibilityLabel={`Play Treat Run with ${pet.name}`}>
-          <Ionicons name="game-controller" size={24} color={colors.purple} />
-        </Pressable>
         <View style={{ flex: 1 }}>
           <PrimaryButton
             title={applied ? 'Application status' : 'Apply for a meeting'}
@@ -208,12 +205,4 @@ const styles = StyleSheet.create({
   fitText: { fontFamily: fonts.medium, fontSize: 13, color: colors.black },
   about: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, color: colors.black },
   bottom: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
-  playButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.purpleTint,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });

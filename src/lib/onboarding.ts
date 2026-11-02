@@ -1,12 +1,11 @@
 import { router } from 'expo-router';
 
-import { Goal } from '@/store';
+import type { Goal } from '@/store';
 
-// Where a new user goes after creating an account: adopters answer the lifestyle
-// questions first, everyone else goes straight to the "all set" screen.
-export function finishOnboarding(goal: Goal) {
-  if (goal === 'adopt') router.push('/onboarding/about-you');
-  else router.push('/onboarding/ready');
+// After creating an account everyone lands on the "all set" screen. Adopters have
+// already answered the quiz and seen their matches by then.
+export function finishOnboarding() {
+  router.push('/onboarding/ready');
 }
 
 // Final hop from the "all set" screen into the part of the app that fits the goal.

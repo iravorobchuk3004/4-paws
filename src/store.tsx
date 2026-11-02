@@ -58,20 +58,15 @@ type AppState = Data & {
   resetAll: () => void;
 };
 
-const STORAGE_KEY = '4paws/state/v1';
+const STORAGE_KEY = '4paws/state/v2';
 
 const initial: Data = {
   seenIntro: false,
   user: null,
   goal: 'adopt',
-  preferences: {
-    children: ['No'],
-    home: ['Apartment'],
-    pets: ['Cat'],
-    activity: ['Calm'],
-    time: ['1–3 hours'],
-  },
-  saved: ['luna', 'molly', 'milo'],
+  // Nothing is pre-picked: matches stay neutral until the person answers the quiz.
+  preferences: {},
+  saved: [],
   applications: [],
   appliedAt: {},
   donated: {},

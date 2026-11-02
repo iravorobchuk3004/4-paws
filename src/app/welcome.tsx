@@ -9,9 +9,11 @@ import { colors, fonts } from '@/theme';
 
 export default function Welcome() {
   const { setGoal } = useApp();
+  // "Get started" runs the full quiz; "Support pets" skips straight to the account.
   const start = (goal: 'adopt' | 'help') => {
+    if (goal === 'adopt') return router.push('/onboarding/quiz');
     setGoal(goal);
-    router.push('/onboarding/goal');
+    router.push('/onboarding/create-account');
   };
 
   return (

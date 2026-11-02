@@ -10,7 +10,7 @@ import { isValidEmail, useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
 export default function CreateAccount() {
-  const { goal, setUser } = useApp();
+  const { setUser } = useApp();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,12 +27,12 @@ export default function CreateAccount() {
     setSubmitted(true);
     if (!name.trim() || !isValidEmail(email) || password.length < 8 || !agreed) return;
     setUser({ name: name.trim(), email: email.trim() });
-    finishOnboarding(goal);
+    finishOnboarding();
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <NavHeader step="Step 2/3" />
+      <NavHeader />
       <ScrollView
         contentContainerStyle={{ paddingBottom: 24 }}
         keyboardShouldPersistTaps="handled"

@@ -7,6 +7,7 @@ import { Celebration, critterFor } from '@/components/Celebration';
 import { useFoundReport } from '@/components/FoundReport';
 import { Tag } from '@/components/PetRow';
 import { Icon, PrimaryButton, SecondaryButton } from '@/components/ui';
+import { WaitPlayCard } from '@/components/WaitPlayCard';
 import { colors, fonts } from '@/theme';
 
 export default function FoundThanks() {
@@ -47,6 +48,8 @@ export default function FoundThanks() {
             <Tag label="Awaiting coordinator" tone="purple" />
           </View>
         </View>
+
+        <WaitPlayCard petId="rocky" wait="Volunteers usually reply within an hour" />
 
         <View style={styles.note}>
           <Icon source={require('../../../assets/figma/info.svg')} size={20} />

@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -9,13 +8,13 @@ import { FadeInUp } from '@/components/anim';
 import { PetCard } from '@/components/PetCard';
 import { StoryCard } from '@/components/StoryCard';
 import { CategoryTile } from '@/components/CategoryTile';
+import { WigglingMascot } from '@/components/Celebration';
 import { Icon, SectionHeader } from '@/components/ui';
 import { allCategory, categories, Category, Pet, stories, toCard } from '@/data/pets';
-import { getProfile, profiles } from '@/data/profiles';
+import { profiles } from '@/data/profiles';
 import { useInbox } from '@/lib/inbox';
 import { matchScore } from '@/lib/match';
 import { myStoryCard, shareStory } from '@/lib/stories';
-import { mealsFrom } from '@/lib/treats';
 import { useApp } from '@/store';
 import { colors, fonts } from '@/theme';
 
@@ -43,9 +42,9 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [radius, setRadius] = useState('25 km');
   const { unread } = useInbox();
-  const { saved, treats, preferences, stories: myStories, user } = useApp();
-  // The game stars a pet you saved, so playing keeps them on your mind.
-  const buddy = getProfile(saved[0] ?? 'luna');
+  const { preferences, stories: myStories, user } = useApp();
+  // Until the quiz is answered, matches are only a rough guess, so we invite people to take it.
+  const answered = Object.keys(preferences).length > 0;
 
   const { matches, loved } = homeLists(category, preferences);
   const browseParams = category === allCategory ? {} : { category: category.label };
@@ -95,7 +94,7 @@ export default function Home() {
           />
           <Pressable
             style={styles.filterButton}
-            onPress={() => router.push({ pathname: '/onboarding/about-you', params: { edit: 'filters' } })}
+            onPress={() => router.push({ pathname: '/onboarding/quiz', params: { edit: 'filters' } })}
           >
             <Icon source={require('../../../assets/figma/icon-filters.svg')} size={20} />
           </Pressable>
@@ -109,18 +108,21 @@ export default function Home() {
           </ScrollView>
         </FadeInUp>
 
-        <FadeInUp delay={250} style={styles.section}>
-          <Pressable style={styles.game} onPress={() => router.push(`/play/${buddy.id}`)}>
-            <Image source={buddy.thumb} style={styles.gamePet} contentFit="cover" />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={styles.gameTitle}>Treat Run with {buddy.name}</Text>
-              <Text style={styles.gameText}>
-                🦴 {treats} bones · 🍲 {mealsFrom(treats)} meals for shelter pets
-              </Text>
-            </View>
-            <Ionicons name="play-circle" size={36} color={colors.white} />
-          </Pressable>
-        </FadeInUp>
+        {!answered && (
+          <FadeInUp delay={250} style={styles.section}>
+            <Pressable
+              style={styles.quiz}
+              onPress={() => router.push({ pathname: '/onboarding/quiz', params: { edit: 'filters' } })}
+            >
+              <WigglingMascot animal="dog" width={56} height={56} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={styles.quizTitle}>Who fits your life?</Text>
+                <Text style={styles.quizText}>6 quick questions, then we sort pets by how well they match you.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color={colors.white} />
+            </Pressable>
+          </FadeInUp>
+        )}
 
         <FadeInUp delay={280} style={styles.section}>
           <SectionHeader title="Perfect match for you" onSeeAll={() => router.push('/matches')} />
@@ -176,7 +178,7 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  game: {
+  quiz: {
     marginHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -186,9 +188,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.purple,
   },
-  gamePet: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: colors.white },
-  gameTitle: { fontFamily: fonts.bold, fontSize: 15, color: colors.white },
-  gameText: { fontFamily: fonts.regular, fontSize: 12, color: colors.purpleSelected },
+  quizTitle: { fontFamily: fonts.bold, fontSize: 15, color: colors.white },
+  quizText: { fontFamily: fonts.regular, fontSize: 12, lineHeight: 17, color: colors.purpleSelected },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',

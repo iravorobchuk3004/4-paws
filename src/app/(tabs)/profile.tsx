@@ -31,7 +31,7 @@ const settings = [
     title: 'Adoption preferences',
     text: 'Lifestyle & ideal companion',
     icon: require('../../../assets/figma/set-paw.svg'),
-    onPress: () => router.push({ pathname: '/onboarding/about-you', params: { edit: '1' } }),
+    onPress: () => router.push({ pathname: '/onboarding/quiz', params: { edit: '1' } }),
   },
   {
     title: 'Notifications',
@@ -114,7 +114,7 @@ export default function Profile() {
                 <Text style={styles.name}>Browsing as a guest</Text>
                 <Text style={styles.email}>Create an account to request meetings</Text>
               </View>
-              <Pressable style={styles.edit} onPress={() => router.push('/onboarding/goal')}>
+              <Pressable style={styles.edit} onPress={() => router.push('/onboarding/quiz')}>
                 <Text style={styles.editText}>Join</Text>
               </Pressable>
             </>
